@@ -11,9 +11,10 @@ desc:GFX SHK34 [shakers + tambourine]
 //              alternate push and pull (PUSH/PULL: how much weaker and darker the pull is). TONE 1.5 .. 9 kHz (egg
 //              shakers high, wooden maracas low), BEADS (small and dense .. big and sparse), STROKE 30 .. 400 ms,
 //              RESONANCE (the shell's ring).
-//   TAMBOURINE a sharp hit (a noise burst and a click on the frame, and its low thud: HIT) rings five metal jingle
-//              resonators (3 .. 12 kHz, BRIGHT moves them), and the jingles keep colliding as they ring (RATTLE).
-//              RING 40 .. 800 ms.
+//   TAMBOURINE the jingles as a stochastic cloud too: the hit sets them moving (its energy dies away over RING,
+//              40 .. 800 ms), and at random moments they collide - each collision a burst that rings the jingles' metal
+//              resonances (about 5.6 and 8.1 kHz, and the shell's 2.3 kHz; BRIGHT moves them), retuned a little at every
+//              collision as the jingles tilt: the shimmer. RATTLE: how many jingles; HIT: the frame's click.
 //   SEQUENCER  a lane per instrument, each with its own LENGTH (1 - 32 steps: polymeters), RATE 1/4 .. 1/32 with
 //              triplets, SWING 0 - 75 % (the off-steps late; 33 % is a triplet feel), HUMANIZE (timing late by up to
 //              20 ms and strength by up to 30 %, at random), ACCENT (accented steps louder and brighter). It follows
@@ -104,14 +105,14 @@ function pc_svt() instance(c1, c2) ( c1 = pc_tn(c1); c2 = pc_tn(c2); );
 
 
 NL = 2;
-SHG = 0.45; TBG = 0.5;                                     // (the instruments' output trims)
+SHG = 0.45; TBG = 0.33;                                     // (the instruments' output trims)
 #ui_man = "gfx-shk34";
 // =====================================================================
 // THE INSTRUMENTS
 // =====================================================================
-pc_nm = 6;                                            // the tambourine: five jingles and the frame's thud
+pc_nm = 4;                                            // the tambourine: the shell, two jingle resonances (and an upper one)
 function ins_note(n) ( pc_mute = 0; n == 70 || n == 82 ? 0 : n == 54 ? 1 : -1; );
-function ins_srinit() ( tb_kh = pc_kd(2.5); tb_kg = pc_kd(0.35); tb_kc = pc_kd(4); );
+function ins_srinit() ( tb_ks = pc_kd(0.9); tb_kc = pc_kd(0.25); tb_pc = 22050 / srate / 1024; );
 function ins_trig(k, v, a) local(b, r) (
   k == 0 ? (
     sh_dir = 1 - sh_dir;                              // push, pull, push ...
@@ -119,11 +120,9 @@ function ins_trig(k, v, a) local(b, r) (
     sh_f = sh_tone * (sh_dir ? 1 : 1 - 0.008 * sh_pp) * (a ? 1 + 0.012 * pc_acc : 1) * TUN[0];
     s1.pc_svf(sh_f, sh_q); s2.pc_svf(sh_f * 1.6, sh_q * 0.8);
   ) : (
-    tb_h = v * (a ? 1 + 0.05 * pc_acc : 1); tb_c = v; tb_r = v;
-    b = (0.72 + 0.056 * tb_br) * TUN[1] * (a ? 1 + 0.01 * pc_acc : 1); r = tb_ring * 0.001;
-    md_setn(0, 1, 3150 * b, r, 0.9 * tb_g0); md_setn(1, 1, 4420 * b, r * 0.92, 0.8 * tb_g0); md_setn(2, 1, 5870 * b, r * 0.84, 0.75 * tb_g0);
-    md_setn(3, 1, 7650 * b, r * 0.72, 0.6 * (0.6 + 0.08 * tb_br) * tb_g0); md_setn(4, 1, 10100 * b, r * 0.6, 0.45 * (0.5 + 0.1 * tb_br) * tb_g0);
-    md_setn(5, 1, 185, 0.028, 0.6 * tb_hit);          // the frame's thud
+    tb_E += v * (a ? 1 + 0.05 * pc_acc : 1);           // the shake's energy
+    tb_c = v * tb_hit;                                 // the frame's click
+    tb_bs = (0.8 + 0.04 * tb_br) * TUN[1] * (a ? 1 + 0.01 * pc_acc : 1);
   );
 );
 function ins_block() (
@@ -133,9 +132,10 @@ function ins_block() (
   sh_den = (7000 - 550 * sh_bd) / srate; sh_kg = pc_kd(0.15 + 0.25 * sh_bd);
   sh_mk = 0.9 / sqrt(sh_q);
   tb_ring = min(max(slider20, 40), 800); tb_br = min(max(slider21, 0), 10); tb_hit = min(max(slider22, 0), 10) / 5;
-  tb_rt = min(max(slider23, 0), 10) / 10; tb_kr = pc_kd(tb_ring * 0.45);
-  tb_g0 = TBG;
-  s1.pc_svt(); s2.pc_svt(); sh_e = pc_tn(sh_e); sh_g = pc_tn(sh_g); tb_g = pc_tn(tb_g); tb_r = pc_tn(tb_r); tb_hp = pc_tn(tb_hp);
+  tb_rt = min(max(slider23, 0), 10) / 10; tb_kE = pc_kd(tb_ring * 0.4);
+  tb_nob = 8 + 40 * tb_rt;                           // the jingles in play
+  tb_gn = sqrt(250 / tb_ring) * sqrt(28 / tb_nob);    // (the level kept as RING and RATTLE change)
+  s1.pc_svt(); s2.pc_svt(); sh_e = pc_tn(sh_e); sh_g = pc_tn(sh_g); tb_E = pc_tn(tb_E); tb_L = pc_tn(tb_L); tb_hp = pc_tn(tb_hp);
 );
 function ins_sample() local(n, x) (
   // SHAKER: the stroke, its grain cloud, the shell
@@ -146,13 +146,20 @@ function ins_sample() local(n, x) (
     n = (rand(2) - 1) * sh_g;
     OUT[0] = (s1.pc_bp(n) + 0.55 * s2.pc_bp(n) + 0.12 * n) * sh_mk * SHG;
   );
-  // TAMBOURINE: the hit and the click excite the jingles; they rattle as they ring
-  x = (rand(2) - 1) * tb_h + tb_c * 1.5; tb_c = 0; tb_h *= tb_kh;
-  tb_r *= tb_kr;
-  rand(1) < 3500 / srate * tb_rt * min(tb_r * 2, 1) ? tb_g = max(tb_g, rand(1) * tb_r);
-  tb_g *= tb_kg; x += (rand(2) - 1) * tb_g * 0.9;
+  // TAMBOURINE (PhISEM): collisions at random, while the shake's energy lasts; each retunes the jingles a little
+  tb_E > 0.0001 ? (
+    rand(1) < tb_nob * tb_pc ? (
+      tb_L += 0.8 * tb_E * tb_gn;
+      md_setn(0, 1, 2300 * tb_bs * (1 + 0.04 * (rand(2) - 1)), 0.0011, 0.12 * TBG);
+      md_setn(1, 1, 5600 * tb_bs * (1 + 0.05 * (rand(2) - 1)), 0.0045 + 0.004 * tb_rt, 0.8 * TBG);
+      md_setn(2, 1, 8100 * tb_bs * (1 + 0.05 * (rand(2) - 1)), 0.0045 + 0.004 * tb_rt, 1.0 * TBG);
+      md_setn(3, 1, 11300 * tb_bs * (1 + 0.05 * (rand(2) - 1)), 0.003, (0.15 + 0.05 * tb_br) * TBG);
+    );
+    tb_E *= tb_kE;
+  );
+  x = (rand(2) - 1) * tb_L; tb_L *= tb_ks;
   EX[1] = x;
-  tb_hp += 0.5 * (x - tb_hp); OUT[1] += (x - tb_hp) * 0.35 * tb_hit;          // the slap's bright edge
+  x = (rand(2) - 1) * tb_c; tb_hp += 0.45 * (x - tb_hp); OUT[1] += (x - tb_hp) * 0.6 * TBG; tb_c *= tb_kc;   // the frame's click
 );
 
 // ---------- the sequencer ----------

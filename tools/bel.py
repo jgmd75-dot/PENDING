@@ -7,12 +7,12 @@ HDR = """desc:GFX BEL34 [cowbell + triangle]
 //
 // BEL34. A procedural (sample-free) cowbell and triangle with a step sequencer synced to REAPER's transport.
 //
-//   COWBELL    two band-limited square oscillators (the plate modes of a steel bell), TUNE 300 .. 1000 Hz and the
-//              OVERTONE ratio 1.3 .. 1.9 (1.48: the classic drum-machine bell), through a resonant band-pass, with a
-//              sharp click and a metallic two-stage decay (a quick drop, then the ring: DECAY 50 .. 1500 ms). DAMP: the
-//              hand on the bell - shorter, darker, wider.
-//   TRIANGLE   a steel rod struck by a beater: a soft fundamental and four ringing metal partials (about 2.5, 5, 8 and
-//              10 kHz at SIZE 5; SIZE moves them), the strike's metallic noise (BRIGHT also tilts the partials), RING
+//   COWBELL    the classic analogue drum-machine recipe: two band-limited square oscillators (the bell's two plate
+//              modes), TUNE 300 .. 1000 Hz (587) and the OVERTONE ratio 1.3 .. 1.9 (1.44: 587 and 845 Hz), through a
+//              resonant band-pass that follows the tuning (2.64 kHz at 587 Hz), with a sharp attack and a two-stage
+//              decay (a fast drop, then the ring: DECAY 50 .. 1500 ms). DAMP: the hand on the bell - shorter, darker.
+//   TRIANGLE   a bent steel rod struck by a beater: twelve dense, inharmonic partials from about 1.1 to 12 kHz (SIZE
+//              moves them), most in close pairs that beat against each other - the shimmer; BRIGHT tilts them, RING
 //              0.08 .. 0.8 s, SOFT (the beater: hard and glassy .. soft and round).
 //   SEQUENCER  a lane per instrument, each with its own LENGTH (1 - 32 steps: polymeters), RATE 1/4 .. 1/32 with
 //              triplets, SWING 0 - 75 %, HUMANIZE (timing late by up to 20 ms and strength by up to 30 %, at random),
@@ -29,8 +29,8 @@ HDR = """desc:GFX BEL34 [cowbell + triangle]
 """
 sl = sliders_common()
 ls, nxt = sliders_lanes([("Cowbell",-15),("Triangle",20)])
-sl += ls + """slider15:540<300,1000,1>-Cowbell tune (Hz)
-slider16:1.48<1.3,1.9,0.01>-Cowbell overtone ratio
+sl += ls + """slider15:587<300,1000,1>-Cowbell tune (Hz)
+slider16:1.44<1.3,1.9,0.01>-Cowbell overtone ratio
 slider17:350<50,1500,1>-Cowbell decay (ms)
 slider18:2<0,10,0.1>-Cowbell damp
 slider19:5<0,10,0.1>-Triangle size
@@ -40,28 +40,27 @@ slider22:3<0,10,0.1>-Triangle soft
 """
 INS = r"""
 NL = 2;
-CBG = 0.25; TRG = 0.1;                                     // (the instruments' output trims)
+CBG = 0.25; TRG = 0.07;                                     // (the instruments' output trims)
 #ui_man = "gfx-bel34";
 // =====================================================================
 // THE INSTRUMENTS
 // =====================================================================
-pc_nm = 5;                                            // the triangle: a soft fundamental and four metal partials
+pc_nm = 12;                                           // the triangle: twelve partials, in beating pairs
+TRF = 4300; TRF[0] = 1; TRF[1] = 1.0042; TRF[2] = 2.57; TRF[3] = 2.583; TRF[4] = 4.13; TRF[5] = 5.36; TRF[6] = 5.381;
+TRF[7] = 6.82; TRF[8] = 8.11; TRF[9] = 8.137; TRF[10] = 9.62; TRF[11] = 11.31;
+TRD = 4320; TRD[0] = 1; TRD[1] = 1; TRD[2] = 0.9; TRD[3] = 0.9; TRD[4] = 0.8; TRD[5] = 0.7; TRD[6] = 0.7; TRD[7] = 0.6; TRD[8] = 0.5; TRD[9] = 0.5; TRD[10] = 0.42; TRD[11] = 0.35;
 function ins_note(n) ( pc_mute = n == 80; n == 56 ? 0 : n == 81 || n == 80 ? 1 : -1; );
-function ins_srinit() ( cb_k1 = pc_kd(9); cb_kc = pc_kd(0.8); tr_kn = pc_kd(1.5); cb_khp = 1 - exp(-2 * $pi * 260 / srate); );
+function ins_srinit() ( cb_k1 = pc_kd(6); cb_kc = pc_kd(0.8); tr_kn = pc_kd(1.5); cb_khp = 1 - exp(-2 * $pi * 260 / srate); );
 function pc_blep(t, dt) ( t < dt ? ( t /= dt; t + t - t * t - 1; ) : t > 1 - dt ? ( t = (t - 1) / dt; t * t + t + t + 1; ) : 0; );
-function ins_trig(k, v, a) local(f0, r, b, tb) (
+function ins_trig(k, v, a) local(f0, r, b, tb, m) (
   k == 0 ? (
     cb_e1 = cb_e2 = v; cb_c = v * (a ? 1.2 : 0.8);
     cb_f1 = cb_tune * TUN[0]; cb_f2 = cb_f1 * cb_rat; cb_d1 = cb_f1 / srate; cb_d2 = cb_f2 / srate; cb_p1 = 0; cb_p2 = 0.25;
-    cbf.pc_svf(cb_f2 * 1.9 * (1 - 0.025 * cb_dmp) * (a ? 1 + 0.015 * pc_acc : 1), 1.6 - 0.08 * cb_dmp);
+    cbf.pc_svf(2640 * (cb_f1 / 587) * (1 - 0.03 * cb_dmp) * (a ? 1 + 0.015 * pc_acc : 1), 3.2 - 0.18 * cb_dmp);
   ) : (
-    f0 = 2500 * 2 ^ ((tr_sz - 5) * 0.15) * TUN[1]; r = tr_ring * (pc_mute ? 0.05 : 1); b = 0.55 + 0.09 * tr_br;
-    md_set(0, 1, f0 * 0.5, r * 1.1, 0.35);
-    md_set(1, 1, f0, r, 1);
-    md_set(2, 1, f0 * 2.02, r * 0.75, 0.8 * b);
-    md_set(3, 1, f0 * 3.2, r * 0.55, 0.55 * b * b);
-    md_set(4, 1, f0 * 4.1, r * 0.4, 0.4 * b * b * b);
-    tr_i = v; tr_n = v * (0.25 + 0.06 * tr_br);
+    f0 = 1100 * 2 ^ ((tr_sz - 5) * 0.15) * TUN[1]; r = tr_ring * (pc_mute ? 0.05 : 1); b = 0.6 + 0.08 * tr_br;
+    m = 0; loop(12, md_set(m, 1, f0 * TRF[m], r * TRD[m], (m & 1 ? 0.8 : 1) * b ^ (m * 0.5) * 0.5); m += 1; );
+    tr_i = v; tr_n = v * (0.15 + 0.04 * tr_br);
     tb = 16000 * 2 ^ (-tr_so * 0.32) * (a ? 1 + 0.05 * pc_acc : 1);           // the beater: soft rounds the strike off
     tr_kl = 1 - exp(-2 * $pi * min(tb, 0.45 * srate) / srate);
   );
@@ -81,7 +80,7 @@ function ins_sample() local(s1, s2, b, e, x) (
     s2 = (cb_p2 < 0.5 ? 1 : -1) + pc_blep(cb_p2, cb_d2) - pc_blep((cb_p2 + 0.5) % 1, cb_d2);
     b = cbf.pc_bp(s1 + 0.8 * s2);
     cb_h += cb_khp * (b - cb_h); b -= cb_h;
-    e = 0.6 * cb_e1 + 0.4 * cb_e2; cb_e1 *= cb_k1; cb_e2 *= cb_k2;
+    e = 0.75 * cb_e1 + 0.25 * cb_e2; cb_e1 *= cb_k1; cb_e2 *= cb_k2;
     x = (rand(2) - 1) * cb_c; cb_c *= cb_kc;
     cb_l += cb_kl * (b * e + x * 0.5 - cb_l);
     OUT[0] = cb_l * CBG;
@@ -99,16 +98,16 @@ function bel_set(tn, rt, dc, dm, sz, br, rg, so) ( !pc_po ? (
   slider15 = tn; slider16 = rt; slider17 = dc; slider18 = dm; slider19 = sz; slider20 = br; slider21 = rg; slider22 = so;
   slider10 = 0; slider11 = -15; slider13 = 0; slider14 = 20; ); );
 function load_preset(p) local(i) (
-  p == 1 || p == 13 ? ( pc_seq(3, 0, 15, 5); bel_set(540, 1.48, 350, 2, 5, 5, 0.40, 3); pc_pat(0, "X.x.X.x.X.x.X.x."); pc_pat(1, "X..............."); ) :
-  p == 2  ? ( pc_seq(1, 0, 10, 6); bel_set(560, 1.48, 300, 2, 5, 5, 0.40, 3); pc_pat(0, "x.X.x.X.x.X.x.X."); pc_pat(1, "................"); ) :
+  p == 1 || p == 13 ? ( pc_seq(3, 0, 15, 5); bel_set(587, 1.44, 350, 2, 5, 5, 0.40, 3); pc_pat(0, "X.x.X.x.X.x.X.x."); pc_pat(1, "X..............."); ) :
+  p == 2  ? ( pc_seq(1, 0, 10, 6); bel_set(600, 1.44, 300, 2, 5, 5, 0.40, 3); pc_pat(0, "x.X.x.X.x.X.x.X."); pc_pat(1, "................"); ) :
   p == 3  ? ( pc_seq(3, 10, 20, 6); bel_set(600, 1.5, 250, 3, 5, 5, 0.40, 3); pc_pat(0, "X..x..X...x.X..."); pc_pat(1, "................"); ) :
   p == 4  ? ( pc_seq(1, 0, 20, 7); bel_set(650, 1.42, 450, 1, 5, 5, 0.40, 3); pc_pat(0, "X.x.X.x.X.xxX.x."); pc_pat(1, "................"); ) :
   p == 5  ? ( pc_seq(1, 0, 20, 7); bel_set(700, 1.45, 400, 1.5, 5, 5, 0.40, 3); pc_pat(0, "X.xxX.x.X.xxX.x."); pc_pat(1, "................"); ) :
-  p == 6  ? ( pc_seq(3, 0, 0, 5); bel_set(540, 1.48, 300, 1, 5, 5, 0.40, 3); pc_pat(0, "X..X..X.X..X..X."); pc_pat(1, "................"); ) :
-  p == 7  ? ( pc_seq(1, 0, 15, 6); bel_set(540, 1.48, 350, 2, 5, 6, 0.32, 3); pc_pat(0, "................"); pc_pat(1, "X.x.X.x.X.x.X.x."); ) :
-  p == 8  ? ( pc_seq(3, 8, 20, 7); bel_set(540, 1.48, 350, 2, 6, 6, 0.13, 2); pc_pat(0, "................"); pc_pat(1, "XxxXXxxXXxxXXxxX"); ) :
-  p == 9  ? ( pc_seq(0, 0, 10, 4); bel_set(540, 1.48, 350, 2, 4, 7, 0.80, 4); pc_pat(0, "................"); pc_pat(1, "X..............."); ) :
-  p == 10 ? ( pc_seq(1, 0, 15, 6); bel_set(560, 1.48, 300, 2, 5, 5, 0.32, 3); pc_pat(0, "X.x.X.x.X.x.X.x."); pc_pat(1, "..X...X...X...X."); ) :
+  p == 6  ? ( pc_seq(3, 0, 0, 5); bel_set(587, 1.44, 300, 1, 5, 5, 0.40, 3); pc_pat(0, "X..X..X.X..X..X."); pc_pat(1, "................"); ) :
+  p == 7  ? ( pc_seq(1, 0, 15, 6); bel_set(587, 1.44, 350, 2, 5, 6, 0.32, 3); pc_pat(0, "................"); pc_pat(1, "X.x.X.x.X.x.X.x."); ) :
+  p == 8  ? ( pc_seq(3, 8, 20, 7); bel_set(587, 1.44, 350, 2, 6, 6, 0.13, 2); pc_pat(0, "................"); pc_pat(1, "XxxXXxxXXxxXXxxX"); ) :
+  p == 9  ? ( pc_seq(0, 0, 10, 4); bel_set(587, 1.44, 350, 2, 4, 7, 0.80, 4); pc_pat(0, "................"); pc_pat(1, "X..............."); ) :
+  p == 10 ? ( pc_seq(1, 0, 15, 6); bel_set(600, 1.44, 300, 2, 5, 5, 0.32, 3); pc_pat(0, "X.x.X.x.X.x.X.x."); pc_pat(1, "..X...X...X...X."); ) :
   p == 11 ? ( pc_seq(1, 0, 15, 6); bel_set(620, 1.5, 300, 2, 5, 5, 0.24, 3); pc_pat(0, "X.x.x"); pc_pat(1, "X.x.x.x."); ) :
   p == 12 ? ( pc_seq(1, 0, 15, 6); bel_set(420, 1.6, 900, 0.5, 5, 5, 0.40, 3); pc_pat(0, "X.x.X.xxX.x.X.x."); pc_pat(1, "................"); );
   p == 13 && !pc_po ? ( slider5 = 0; slider6 = 0; slider7 = 50; slider8 = 0; );
