@@ -1,0 +1,691 @@
+desc:GFX CH34 [channel strip]
+//tags: channel strip preamp parametric eq compressor limiter vca soft knee reorder
+//author: JGWizrad / Garden FX (GFX)
+//
+// Requires gfx-input, gfx-output, gfx-drift, gfx-ui, gfx-panel, gfx-dyn and gfx-clip (.jsfx-inc) in the same folder.
+//
+// CH34. A vintage American studio strip in one rack: a warm analogue PREAMP (the input stage of a classic 70s
+// analogue delay), a 3-band stepped parametric EQ and a VCA COMP / limiter, in any order (the sound is designed from
+// scratch). Linked stereo: one set of controls and one compressor detector for both sides.
+//
+//   PREAMP  a 20 Hz coupling high-pass, DRIVE (0 .. +24 dB into a gently lopsided transistor stage: house clipper,
+//           ADAA, drive-tracking pre-filter and knee), level-compensated as it goes (it thickens a touch as it is
+//           pushed), a little low-mid warmth (+1 dB shelf at 180 Hz) and the delay's input filter (a 13 kHz roll-off).
+//   EQ      three peaking bands, every control stepped as on the hardware:
+//             LOW  31, 62, 125, 250, 500 Hz, 1, 2, 4 kHz      MID  62 Hz .. 8 kHz      HIGH  125 Hz .. 16 kHz
+//             WIDTH (Q) 0.25, 0.5, 1, 2, 4      GAIN -20 .. +20 dB in 4 dB steps
+//           A change glides (80 ms, updated every 32 samples): no zipper, no click.
+//   COMP    a feed-forward VCA compressor with a true-RMS detector (linked stereo): THRESHOLD -40 .. 0 dBFS, RATIO
+//           1:1 .. 20:1 and INF, ATTACK 0.1 .. 100 ms, RELEASE 20 ms .. 2 s, SOFT KNEE (a 10 dB knee that eases
+//           into compression), AUTO (program-dependent attack and release: fast on transients, slow on sustained
+//           material; it overrides ATTACK and RELEASE), MAKEUP -20 .. +20 dB, and PEAK LIMIT (a fast peak limiter after
+//           the makeup, its ceiling -20 .. 0 dBFS, on its own key).
+//   ORDER   the ◄ / ► keys on each module move it left or right; the signal runs left to right in the order shown. A
+//           change runs the new chain alongside the old one for 40 ms, then crossfades into it over 25 ms: no click.
+//   IN keys on each module fade it in / out (10 ms). BYPASS fades the whole strip (10 ms).
+//   DRIFT   (0 - 100 %, 50 % = standard, 0 = none): "voltage, drive, bias" - the supply sags with what the preamp
+//           draws and wanders slowly (the preamp's headroom breathes), the preamp's drive wanders a little, and the
+//           bias wanders: the preamp's asymmetry and the compressor VCA's control voltage (its threshold, by a few
+//           tenths of a dB).
+//   INPUT -12 .. +12 dB, OUTPUT -12 .. +12 dB. The house output stage passes straight through (a mix tool: no clip).
+//   VFD / MATRIX  the panel's look (VFD orange and black; MATRIX battleship grey with cream). The look only.
+//   PRESETS 12 (Init + 11) plus Reset all to defaults. A preset sets the modules (keys, knobs) and the order; INPUT,
+//           OUTPUT, BYPASS, DRIFT and the look are left alone (Reset all restores them too).
+
+slider1:0<-12,12,0.1>-Input trim (dB)
+slider2:0<0,5,1{Pre-EQ-Comp,Pre-Comp-EQ,EQ-Pre-Comp,EQ-Comp-Pre,Comp-Pre-EQ,Comp-EQ-Pre}>-Order
+slider3:1<0,1,1{Out,In}>-Preamp in
+slider4:3<0,10,0.1>-Drive
+slider5:1<0,1,1{Out,In}>-EQ in
+slider6:2<0,7,1{31 Hz,62 Hz,125 Hz,250 Hz,500 Hz,1 kHz,2 kHz,4 kHz}>-Low freq
+slider7:2<0,4,1{0.25,0.5,1,2,4}>-Low width (Q)
+slider8:5<0,10,1{-20,-16,-12,-8,-4,0,+4,+8,+12,+16,+20}>-Low gain (dB)
+slider9:4<0,7,1{62 Hz,125 Hz,250 Hz,500 Hz,1 kHz,2 kHz,4 kHz,8 kHz}>-Mid freq
+slider10:2<0,4,1{0.25,0.5,1,2,4}>-Mid width (Q)
+slider11:5<0,10,1{-20,-16,-12,-8,-4,0,+4,+8,+12,+16,+20}>-Mid gain (dB)
+slider12:5<0,7,1{125 Hz,250 Hz,500 Hz,1 kHz,2 kHz,4 kHz,8 kHz,16 kHz}>-High freq
+slider13:2<0,4,1{0.25,0.5,1,2,4}>-High width (Q)
+slider14:5<0,10,1{-20,-16,-12,-8,-4,0,+4,+8,+12,+16,+20}>-High gain (dB)
+slider15:1<0,1,1{Out,In}>-Comp in
+slider16:-20<-40,0,0.1>-Threshold (dBFS)
+slider17:3<1,21,0.1>-Ratio (21 = inf)
+slider18:10<0.1,100,0.1>-Attack (ms)
+slider19:200<20,2000,1>-Release (ms)
+slider20:0<0,1,1{Off,On}>-Auto
+slider21:1<0,1,1{Off,On}>-Soft knee
+slider22:0<-20,20,0.1>-Makeup (dB)
+slider23:-1<-20,0,0.1>-Peak limit (dBFS)
+slider24:0<0,1,1{Off,On}>-Peak limit on
+slider25:0<-12,12,0.1>-Output trim (dB)
+slider26:0<0,1,1{Off,On}>-Bypass
+slider27:50<0,100,1>-Drift (%)
+slider28:0<0,1,1{VFD,Matrix}>-Look
+
+in_pin:left input
+in_pin:right input
+out_pin:left output
+out_pin:right output
+
+import gfx-input.jsfx-inc
+import gfx-output.jsfx-inc
+import gfx-drift.jsfx-inc
+import gfx-ui.jsfx-inc
+import gfx-panel.jsfx-inc
+import gfx-dyn.jsfx-inc
+import gfx-clip.jsfx-inc
+
+@init
+#ui_man = "gfx-ch34";                                 // the ? pop-up links to this manual
+ext_noinit = 1;
+clp_aa = 1; clp_pf_on = 1; clp_kt_on = 1;             // gfx-clip: ADAA, pre-filter, knee tracking (the preamp)
+
+function cs_tn(x) ( abs(x) < 0.000000000001 ? 0 : x; );
+function cs_op(f) ( 1 - exp(-2 * $pi * min(f, 0.49 * srate) / srate); );
+function cs_tc(ms) ( 1 - exp(-1 / (max(ms, 0.01) * 0.001 * srate)); );
+
+// ---------- the EQ tables ----------
+function cs_lf(i) ( i == 0 ? 31 : i == 1 ? 62 : i == 2 ? 125 : i == 3 ? 250 : i == 4 ? 500 : i == 5 ? 1000 : i == 6 ? 2000 : 4000; );
+function cs_mf(i) ( i == 0 ? 62 : 125 * 2 ^ (i - 1); );             // MID: 62 Hz, then 125 Hz .. 8 kHz
+function cs_q(i) ( i == 0 ? 0.25 : i == 1 ? 0.5 : i == 2 ? 1 : i == 3 ? 2 : 4; );
+// coefficients of the three bands (shared by both sides and both chain sets): EQC[band * 5 + k]
+EQC = 100;
+function cs_peak(band, f, q, gdb) local(A, w, cw, al, n, o) (
+  o = EQC + band * 5;
+  A = 10 ^ (gdb / 40); w = 2 * $pi * min(f, 0.45 * srate) / srate; cw = cos(w); al = sin(w) / (2 * q); n = 1 + al / A;
+  o[0] = (1 + al * A) / n; o[1] = -2 * cw / n; o[2] = (1 - al * A) / n; o[3] = -2 * cw / n; o[4] = (1 - al / A) / n;
+);
+
+// the EQ glide (every 32 samples): frequencies and widths on a log scale, gains in dB; coefficients recomputed
+// only while something moves
+function cs_equpd(k) local(m) (
+  m = abs(cs_lf_ - cs_lft) + abs(cs_mf_ - cs_mft) + abs(cs_hf_ - cs_hft) + abs(cs_lq_ - cs_lqt) + abs(cs_mq_ - cs_mqt) + abs(cs_hq_ - cs_hqt)
+    + abs(cs_lg_ - cs_lgt) + abs(cs_mg_ - cs_mgt) + abs(cs_hg_ - cs_hgt);
+  m > 0.0001 || k >= 1 ? (
+    cs_lf_ *= (cs_lft / cs_lf_) ^ k; cs_mf_ *= (cs_mft / cs_mf_) ^ k; cs_hf_ *= (cs_hft / cs_hf_) ^ k;
+    cs_lq_ *= (cs_lqt / cs_lq_) ^ k; cs_mq_ *= (cs_mqt / cs_mq_) ^ k; cs_hq_ *= (cs_hqt / cs_hq_) ^ k;
+    cs_lg_ += (cs_lgt - cs_lg_) * k; cs_mg_ += (cs_mgt - cs_mg_) * k; cs_hg_ += (cs_hgt - cs_hg_) * k;
+    cs_peak(0, cs_lf_, cs_lq_, cs_lg_); cs_peak(1, cs_mf_, cs_mq_, cs_mg_); cs_peak(2, cs_hf_, cs_hq_, cs_hg_);
+  );
+);
+
+// ---------- the order: six permutations of P (0), E (1), C (2) ----------
+CS_PERM = 0;
+CS_PERM[0] = 0; CS_PERM[1] = 1; CS_PERM[2] = 2;      // P E C
+CS_PERM[3] = 0; CS_PERM[4] = 2; CS_PERM[5] = 1;      // P C E
+CS_PERM[6] = 1; CS_PERM[7] = 0; CS_PERM[8] = 2;      // E P C
+CS_PERM[9] = 1; CS_PERM[10] = 2; CS_PERM[11] = 0;    // E C P
+CS_PERM[12] = 2; CS_PERM[13] = 0; CS_PERM[14] = 1;   // C P E
+CS_PERM[15] = 2; CS_PERM[16] = 1; CS_PERM[17] = 0;   // C E P
+function cs_perm_of(a, b, c) local(i, k) (
+  k = 0; i = 0;
+  loop(6, CS_PERM[i * 3] == a && CS_PERM[i * 3 + 1] == b && CS_PERM[i * 3 + 2] == c ? k = i; i += 1; );
+  k;
+);
+
+// =====================================================================
+// THE MODULES - each instance holds both sides' state; they read and write the pair cs_a / cs_b (left / right)
+// =====================================================================
+// ---- PREAMP ----
+function pr_run() instance(hpL, hpR, wL, wR, l1L, l2L, l1R, l2R, rest) local(xl, xr) (
+  xl = cs_a - hpL; hpL += pr_khp * (cs_a - hpL); xr = cs_b - hpR; hpR += pr_khp * (cs_b - hpR);
+  xl = this.cL.clp_pf_run(xl); xr = this.cR.clp_pf_run(xr);
+  xl = (this.cL.clp_run(xl * pr_gs + pr_b) - rest) * pr_cmp;            // the transistor stage (ADAA), compensated
+  xr = (this.cR.clp_run(xr * pr_gs + pr_b) - rest) * pr_cmp;
+  wL += pr_kw * (xl - wL); xl += 0.122 * wL; wR += pr_kw * (xr - wR); xr += 0.122 * wR;   // low-mid warmth
+  l1L += pr_klp * (xl - l1L); l2L += pr_klp * (l1L - l2L);              // the delay's input filter (2 poles)
+  l1R += pr_klp * (xr - l1R); l2R += pr_klp * (l1R - l2R);
+  cs_a = l2L * pr_out; cs_b = l2R * pr_out;
+);
+function pr_cfg(n) instance(rest) (
+  this.cL.clp_set(2, pr_v, pr_v * 0.85, 0); this.cR.clp_set(2, pr_v, pr_v * 0.85, 0);
+  this.cL.clp_kt_cfg(0.25, 0.45); this.cR.clp_kt_cfg(0.25, 0.45);
+  this.cL.clp_knee(this.cL.clp_kt_block(pr_vd, srate, n)); this.cR.clp_knee(this.cR.clp_kt_block(pr_vd, srate, n));
+  this.cL.clp_pf_cfg(0.45 * srate, 12000, -1, 120); this.cR.clp_pf_cfg(0.45 * srate, 12000, -1, 120);
+  this.cL.clp_pf_block(pr_vd, srate, n); this.cR.clp_pf_block(pr_vd, srate, n);
+  rest = this.cL.clp_crv(pr_b);
+);
+function pr_prime() ( this.cL.x1 = this.cR.x1 = pr_b; this.cL.ad1 = this.cR.ad1 = this.cL.clp_ad(pr_b); );
+function pr_reset() instance(hpL, hpR, wL, wR, l1L, l2L, l1R, l2R) (
+  hpL = hpR = wL = wR = l1L = l2L = l1R = l2R = 0;
+  this.cL.clp_reset(); this.cR.clp_reset(); this.cL.clp_pf_reset(); this.cR.clp_pf_reset();
+);
+function pr_tidy() instance(hpL, hpR, wL, wR, l1L, l2L, l1R, l2R) (
+  hpL = cs_tn(hpL); hpR = cs_tn(hpR); wL = cs_tn(wL); wR = cs_tn(wR);
+  l1L = cs_tn(l1L); l2L = cs_tn(l2L); l1R = cs_tn(l1R); l2R = cs_tn(l2R);
+  this.cL.clp_tidy(); this.cR.clp_tidy();
+);
+
+// ---- EQ: three peaking bands, transposed direct form II; states in the instance ----
+function eq_bq(x, o) instance(s1, s2) local(y) ( y = o[0] * x + s1; s1 = o[1] * x - o[3] * y + s2; s2 = o[2] * x - o[4] * y; y; );
+function eq_run() (
+  cs_a = this.h0.eq_bq(this.m0.eq_bq(this.l0.eq_bq(cs_a, EQC), EQC + 5), EQC + 10);
+  cs_b = this.h1.eq_bq(this.m1.eq_bq(this.l1.eq_bq(cs_b, EQC), EQC + 5), EQC + 10);
+);
+function eq_reset() (
+  this.l0.s1 = this.l0.s2 = this.m0.s1 = this.m0.s2 = this.h0.s1 = this.h0.s2 = 0;
+  this.l1.s1 = this.l1.s2 = this.m1.s1 = this.m1.s2 = this.h1.s1 = this.h1.s2 = 0;
+);
+function eq_tidy() (
+  this.l0.s1 = cs_tn(this.l0.s1); this.l0.s2 = cs_tn(this.l0.s2); this.m0.s1 = cs_tn(this.m0.s1); this.m0.s2 = cs_tn(this.m0.s2);
+  this.h0.s1 = cs_tn(this.h0.s1); this.h0.s2 = cs_tn(this.h0.s2); this.l1.s1 = cs_tn(this.l1.s1); this.l1.s2 = cs_tn(this.l1.s2);
+  this.m1.s1 = cs_tn(this.m1.s1); this.m1.s2 = cs_tn(this.m1.s2); this.h1.s1 = cs_tn(this.h1.s1); this.h1.s2 = cs_tn(this.h1.s2);
+);
+
+// ---- COMP: true-RMS detector (linked), static curve (soft or hard knee), attack / release on the gain, VCA, makeup,
+//      PEAK LIMIT ----
+function cp_run() instance(ms, gdb, fst, slw, pk, pg, grm) local(x2, lv, ov, k, tgt, c, g, a) (
+  x2 = 0.5 * (cs_a * cs_a + cs_b * cs_b);
+  ms += cp_krms * (x2 - ms);                                           // the RMS average (5 ms)
+  lv = 10 * log10(max(ms, 0.0000000001)) + 3.0103;                     // dB, a sine reads its peak
+  ov = lv - cp_th;                                                     // over the threshold
+  cp_soft ? (
+    k = 5;                                                             // half the 10 dB knee
+    tgt = ov <= -k ? 0 : ov >= k ? ov * cp_sl : cp_sl * sqr(ov + k) / (4 * k);
+  ) : ( tgt = ov > 0 ? ov * cp_sl : 0; );
+  tgt = -tgt;                                                          // the gain wanted (dB, <= 0)
+  cp_auto ? (                                                          // AUTO: program-dependent
+    fst += (tgt < fst ? cp_kaf : cp_krf) * (tgt - fst);                // fast path: transients
+    slw += (tgt < slw ? cp_kas : cp_krs) * (tgt - slw);                // slow path: the body
+    gdb = min(fst, slw) + 0.35 * (fst - min(fst, slw));
+  ) : (
+    gdb += (tgt < gdb ? cp_ka : cp_kr) * (tgt - gdb);
+  );
+  grm = min(grm, gdb);
+  g = exp(0.115129255 * (gdb + cp_mk));                                // the VCA and the makeup
+  cs_a *= g; cs_b *= g;
+  cp_pon ? (                                                           // PEAK LIMIT: instant attack, 60 ms release
+    a = max(abs(cs_a), abs(cs_b));
+    c = a > cp_ceil ? cp_ceil / a : 1;
+    pg = c < pg ? c : pg + (1 - pg) * cp_kpr;
+    cs_a *= pg; cs_b *= pg;
+    cs_a = max(-cp_ceil, min(cp_ceil, cs_a)); cs_b = max(-cp_ceil, min(cp_ceil, cs_b));   // (the last word on the sample peaks)
+  );
+);
+function cp_reset() instance(ms, gdb, fst, slw, pk, pg) ( ms = 0; gdb = fst = slw = 0; pk = 0; pg = 1; );
+function cp_tidy() instance(ms) ( ms = cs_tn(ms); );
+
+// ---------- one chain set: the three modules in the order o, each faded by its IN key ----------
+function set_run(xl, xr, o) local(k, m, ol, or) (
+  cs_a = xl; cs_b = xr; k = 0;
+  loop(3,
+    m = CS_PERM[o * 3 + k]; ol = cs_a; or = cs_b;
+    m == 0 ? ( cs_gP > 0 ? ( this.pr.pr_run(); cs_a = ol + cs_eP * (cs_a - ol); cs_b = or + cs_eP * (cs_b - or); ); ) :
+    m == 1 ? ( cs_gE > 0 ? ( this.eq.eq_run(); cs_a = ol + cs_eE * (cs_a - ol); cs_b = or + cs_eE * (cs_b - or); ); ) :
+             ( cs_gC > 0 ? ( this.cp.cp_run(); cs_a = ol + cs_eC * (cs_a - ol); cs_b = or + cs_eC * (cs_b - or); ); );
+    k += 1;
+  );
+);
+function set_reset() ( this.pr.pr_reset(); this.eq.eq_reset(); this.cp.cp_reset(); );
+function set_tidy() ( this.pr.pr_tidy(); this.eq.eq_tidy(); this.cp.cp_tidy(); );
+
+// ---------- presets ----------
+#cs_pm = "Init|Warm Vocal|Bright Vocal|Bass DI|Kick Punch|Snare Crack|Acoustic Guitar|Electric Guitar|Drum Bus|Mix Bus Glue|Squashed Room|Broadcast Voice";
+function cs_mods(o, pi, dr, ei, lf, lw, lg, mf, mw, mg, hf, hw, hg, ci, th, ra, at, re, au, sk, mk, pl, po) (
+  slider2 = o; slider3 = pi; slider4 = dr; slider5 = ei; slider6 = lf; slider7 = lw; slider8 = lg; slider9 = mf; slider10 = mw;
+  slider11 = mg; slider12 = hf; slider13 = hw; slider14 = hg; slider15 = ci; slider16 = th; slider17 = ra; slider18 = at;
+  slider19 = re; slider20 = au; slider21 = sk; slider22 = mk; slider23 = pl; slider24 = po;
+);
+function load_preset(p) local(i) (
+  //       ord pre drv  eq lf lw lg mf mw mg hf hw hg  cp  thr  rat  att  rel au sk mk  plim pon
+  p == 1  ? cs_mods(0, 1, 3,   1, 2, 2, 5, 4, 2, 5, 5, 2, 5,  1, -20, 3,   10,  200, 0, 1, 0,  -1,  0) :   // Init
+  p == 2  ? cs_mods(0, 1, 4,   1, 1, 1, 4, 3, 2, 6, 6, 1, 6,  1, -24, 3,   8,   180, 0, 1, 3,  -1,  1) :   // Warm Vocal
+  p == 3  ? cs_mods(0, 1, 2.5, 1, 2, 2, 4, 5, 2, 6, 6, 1, 7,  1, -22, 4,   5,   150, 0, 1, 3,  -1,  1) :   // Bright Vocal
+  p == 4  ? cs_mods(0, 1, 5,   1, 1, 1, 6, 4, 2, 6, 3, 1, 4,  1, -24, 4,   15,  250, 0, 1, 3,  -1,  1) :   // Bass DI
+  p == 5  ? cs_mods(1, 1, 5,   1, 1, 2, 7, 3, 3, 3, 4, 2, 6,  1, -18, 6,   20,  120, 0, 0, 4,  -1,  1) :   // Kick Punch
+  p == 6  ? cs_mods(1, 1, 4,   1, 3, 2, 6, 4, 3, 4, 5, 2, 7,  1, -20, 5,   15,  100, 0, 0, 4,  -1,  1) :   // Snare Crack
+  p == 7  ? cs_mods(2, 1, 2,   1, 3, 2, 4, 4, 1, 5, 6, 1, 6,  1, -20, 2.5, 12,  250, 1, 1, 2,  -1,  0) :   // Acoustic Guitar
+  p == 8  ? cs_mods(0, 1, 6,   1, 1, 2, 4, 4, 2, 6, 5, 2, 4,  1, -18, 3,   10,  200, 1, 1, 2,  -1,  0) :   // Electric Guitar
+  p == 9  ? cs_mods(0, 1, 3.5, 1, 1, 1, 6, 4, 1, 4, 6, 1, 6,  1, -16, 4,   30,  150, 0, 1, 3,  -0.5, 1) :  // Drum Bus
+  p == 10 ? cs_mods(2, 1, 2,   1, 1, 0, 5, 4, 0, 5, 7, 0, 6,  1, -14, 2,   30,  300, 1, 1, 1.5,-0.3, 1) :  // Mix Bus Glue
+  p == 11 ? cs_mods(0, 1, 7,   1, 2, 1, 6, 5, 1, 4, 6, 1, 7,  1, -32, 21,  0.5, 80,  0, 0, 10, -1,  1) :   // Squashed Room
+  p == 12 ? cs_mods(0, 1, 3,   1, 2, 1, 3, 5, 1, 7, 5, 1, 6,  1, -26, 8,   2,   120, 1, 1, 6,  -1,  1) :   // Broadcast Voice
+  p == 13 ? ( cs_mods(0, 1, 3, 1, 2, 2, 5, 4, 2, 5, 5, 2, 5, 1, -20, 3, 10, 200, 0, 1, 0, -1, 0);
+              slider1 = 0; slider25 = 0; slider26 = 0; slider27 = 50; slider28 = 0; );          // Reset all to defaults
+  i = 1; loop(28, ui_auto(i); i += 1; );
+  pr_cur = p == 13 ? 1 : p;
+);
+
+// ---------- state ----------
+function cs_srinit() (
+  cs_sr = srate;
+  pr_khp = cs_op(20); pr_kw = cs_op(180); pr_klp = cs_op(13000 * 1.27);   // (two poles: -3 dB near 13 kHz)
+  cp_krms = cs_tc(5); cp_kpr = cs_tc(60);
+  cp_kaf = cs_tc(2); cp_krf = cs_tc(60); cp_kas = cs_tc(30); cp_krs = cs_tc(900);
+  cs_fst = 1 / (0.01 * srate);                        // IN keys and BYPASS: 10 ms
+  cs_xst = 1 / (0.025 * srate);                       // the order crossfade: 25 ms
+  cs_gsm = 1 - exp(-1 / (0.015 * srate));
+  cs_eqk = 1 - exp(-32 / (0.08 * srate));             // the EQ glide: 80 ms
+  cs_eat = cs_tc(30); cs_ert = cs_tc(1200);           // the supply: draw / recovery
+  ost_init(0);
+);
+cs_srinit();
+in_init();
+dV.drift_init(0.8 + rand(0.4)); dD.drift_init(0.8 + rand(0.4)); dB.drift_init(0.8 + rand(0.4)); dC.drift_init(0.8 + rand(0.4));
+drift_macro(50);
+sA.set_reset(); sB.set_reset();
+cs_cur = 0; cs_oCur = cs_oNew = slider2; cs_xf = 0;
+cs_gP = slider3 >= 0.5; cs_gE = slider5 >= 0.5; cs_gC = slider15 >= 0.5; cs_gBy = slider26 >= 0.5;
+cs_snap = 1;
+
+ui_thm = 5; ui_hw = 1;                                // house keycaps for the preset bar and the size picker
+!ui_dflt ? ( ui_sz = 0; pr_cur = 1; );                // new instances open in Medium, on Init
+ui_dflt = 1;
+
+@serialize
+file_var(0, ui_sz);
+file_var(0, pr_cur);
+
+@block
+srate != cs_sr ? cs_srinit();
+in_setup(slider1, 0);
+ost_setup(0, 0.3, 120, 6000, -0.3, 0);                // the house output stage: straight through (a mix tool)
+drift_macro(slider27);
+// the order: a change starts the crossfade into the other set (warmed up first); one more change waits for it
+cs_ot = floor(min(max(slider2, 0), 5) + 0.5);
+cs_xf == 0 && cs_ot != cs_oCur ? (
+  cs_snap ? cs_oCur = cs_ot : (
+    cs_oNew = cs_ot; cs_xf = 0.000001; cs_wu = floor(0.04 * srate);
+    cs_cur ? ( sA.set_reset(); cs_prime = 1; ) : ( sB.set_reset(); cs_prime = 2; );
+  );
+);
+cs_tP = slider3 >= 0.5; cs_tE = slider5 >= 0.5; cs_tCp = slider15 >= 0.5; cs_tBy = slider26 >= 0.5;
+cs_gl = cs_snap ? 1 : 1 - exp(-samplesblock / (0.03 * srate));          // knob glides: 30 ms
+// DRIFT: voltage (a slow wander and the sag), drive, bias
+cs_n = samplesblock / srate;
+cs_vv = dV.drift_tick(0.04 * dm_s * cs_n); cs_vd = dD.drift_tick(0.06 * dm_s * cs_n);
+cs_vb = dB.drift_tick(0.05 * dm_s * cs_n); cs_vc = dC.drift_tick(0.05 * dm_s * cs_n);
+// PREAMP: DRIVE 0 .. +24 dB (with its wander), the supply (headroom), the bias
+cs_dr += (min(max(slider4, 0), 10) / 10 - cs_dr) * cs_gl;
+pr_vd = cs_dr;
+pr_g = 10 ^ ((24 * cs_dr + 0.5 * dm_a * cs_vd) / 20) * 0.6;
+pr_v = 1 - 0.04 * dm_a * (0.5 + 0.5 * cs_vv) - 0.12 * dm_a * cs_env;   // the supply: wander and sag
+pr_b = 0.05 + 0.03 * dm_a * cs_vb;
+pr_cmp = 1 / pr_g;                                                        // level-compensated (the curve still thickens it)
+pr_out = 0.95;
+// EQ: the stepped settings, glided in Hz (log) and dB, coefficients per block
+cs_t = floor(slider6 + 0.5); cs_lft = cs_lf(cs_t);
+cs_t = floor(slider9 + 0.5); cs_mft = cs_mf(cs_t);
+cs_t = floor(slider12 + 0.5); cs_hft = 125 * 2 ^ cs_t;                  // 125 Hz .. 16 kHz
+cs_lqt = cs_q(floor(slider7 + 0.5)); cs_mqt = cs_q(floor(slider10 + 0.5)); cs_hqt = cs_q(floor(slider13 + 0.5));
+cs_lgt = -20 + 4 * floor(slider8 + 0.5); cs_mgt = -20 + 4 * floor(slider11 + 0.5); cs_hgt = -20 + 4 * floor(slider14 + 0.5);
+cs_snap ? ( cs_lf_ = cs_lft; cs_mf_ = cs_mft; cs_hf_ = cs_hft; cs_lq_ = cs_lqt; cs_mq_ = cs_mqt; cs_hq_ = cs_hqt; cs_lg_ = cs_lgt; cs_mg_ = cs_mgt; cs_hg_ = cs_hgt;
+            cs_equpd(1); );                                    // (then glided every 32 samples in @sample)
+// COMP
+cp_th = min(max(slider16, -40), 0) + 0.4 * dm_a * cs_vc;                // the VCA's control voltage wanders a little
+cs_r = min(max(slider17, 1), 21); cp_sl = cs_r >= 20.95 ? 1 : 1 - 1 / cs_r;
+cp_ka = cs_tc(min(max(slider18, 0.1), 100)); cp_kr = cs_tc(min(max(slider19, 20), 2000));
+cp_auto = slider20 >= 0.5; cp_soft = slider21 >= 0.5;
+cs_mkt = min(max(slider22, -20), 20); cs_snap ? cp_mk = cs_mkt; cp_mk += (cs_mkt - cp_mk) * cs_gl;
+cp_ceil = 10 ^ (min(max(slider23, -20), 0) / 20); cp_pon = slider24 >= 0.5;
+cs_outt = 10 ^ (min(max(slider25, -12), 12) / 20);
+// the chain sets: the preamp's clipper set-up; a set that has just been reset starts at rest
+sA.pr.pr_cfg(samplesblock); sB.pr.pr_cfg(samplesblock);
+cs_snap || cs_prime == 1 ? sA.pr.pr_prime(); cs_snap || cs_prime == 2 ? sB.pr.pr_prime(); cs_prime = 0;
+cs_snap ? ( pr_gs = pr_g; cs_outs = cs_outt; );
+cs_snap = 0;
+sA.set_tidy(); sB.set_tidy();
+cs_env = cs_tn(cs_env);
+// the panel's mailboxes
+csa_pl = max(csa_pl, cs_pl); csa_pr = max(csa_pr, cs_pr); csa_ol = max(csa_ol, cs_ol); csa_or = max(csa_or, cs_or);
+cs_pl = cs_pr = cs_ol = cs_or = 0;
+csa_gr = min(csa_gr, cs_cur ? sB.cp.grm : sA.cp.grm); sA.cp.grm = sB.cp.grm = 0;
+csa_v = pr_v;
+
+@sample
+spl0 != spl0 ? spl0 = 0; spl1 != spl1 ? spl1 = 0;
+in_process(spl0, spl1);
+cs_xl = in_l; cs_xr = in_r;
+abs(cs_xl) < 0.000000000000001 ? cs_xl = 0; abs(cs_xr) < 0.000000000000001 ? cs_xr = 0;
+cs_pl = max(cs_pl, abs(cs_xl)); cs_pr = max(cs_pr, abs(cs_xr));
+// IN keys and BYPASS: 10 ms fades (a module coming back in starts from rest)
+cs_gP != cs_tP ? ( cs_gP == 0 ? ( sA.pr.pr_reset(); sB.pr.pr_reset(); sA.pr.pr_prime(); sB.pr.pr_prime(); );
+                   cs_gP = cs_tP ? min(cs_gP + cs_fst, 1) : max(cs_gP - cs_fst, 0); );
+cs_gE != cs_tE ? ( cs_gE == 0 ? ( sA.eq.eq_reset(); sB.eq.eq_reset(); ); cs_gE = cs_tE ? min(cs_gE + cs_fst, 1) : max(cs_gE - cs_fst, 0); );
+cs_gC != cs_tCp ? ( cs_gC == 0 ? ( sA.cp.cp_reset(); sB.cp.cp_reset(); ); cs_gC = cs_tCp ? min(cs_gC + cs_fst, 1) : max(cs_gC - cs_fst, 0); );
+cs_gBy != cs_tBy ? ( cs_gBy = cs_tBy ? min(cs_gBy + cs_fst, 1) : max(cs_gBy - cs_fst, 0); );
+cs_eP = cs_gP * cs_gP * (3 - 2 * cs_gP); cs_eE = cs_gE * cs_gE * (3 - 2 * cs_gE); cs_eC = cs_gC * cs_gC * (3 - 2 * cs_gC);
+cs_eB = cs_gBy * cs_gBy * (3 - 2 * cs_gBy);
+// the order crossfade (after the warm-up)
+cs_xf > 0 ? ( cs_wu > 0 ? cs_wu -= 1 : ( cs_xf += cs_xst; cs_xf >= 1 ? ( cs_xf = 0; cs_cur = 1 - cs_cur; cs_oCur = cs_oNew; ); ); );
+cs_ex = cs_xf * cs_xf * (3 - 2 * cs_xf);
+// glides (the EQ's every 32 samples: 80 ms)
+(cs_eqcnt += 1) >= 32 ? ( cs_eqcnt = 0; cs_equpd(cs_eqk); );
+pr_gs += (pr_g - pr_gs) * cs_gsm;
+cs_outs += (cs_outt - cs_outs) * cs_gsm;
+// the chain
+cs_cur ? sB.set_run(cs_xl, cs_xr, cs_oCur) : sA.set_run(cs_xl, cs_xr, cs_oCur);
+cs_yl = cs_a; cs_yr = cs_b;
+cs_xf > 0 ? (
+  cs_cur ? sA.set_run(cs_xl, cs_xr, cs_oNew) : sB.set_run(cs_xl, cs_xr, cs_oNew);
+  cs_yl += cs_ex * (cs_a - cs_yl); cs_yr += cs_ex * (cs_b - cs_yr);
+);
+// the supply sags with what the preamp draws (the input level into it)
+cs_d = max(abs(cs_xl), abs(cs_xr)) * pr_gs * 0.3 * cs_gP; cs_env += (cs_d > cs_env ? cs_eat : cs_ert) * (min(cs_d, 1) - cs_env);
+cs_eB > 0 ? ( cs_yl += cs_eB * (cs_xl - cs_yl); cs_yr += cs_eB * (cs_xr - cs_yr); );
+cs_yl *= cs_outs; cs_yr *= cs_outs;
+cs_yl != cs_yl ? cs_yl = 0; cs_yr != cs_yr ? cs_yr = 0;
+ost_out(cs_yl, cs_yr);
+spl0 = max(-4, min(4, ost_l));
+spl1 = max(-4, min(4, ost_r));
+cs_ol = max(cs_ol, abs(spl0)); cs_or = max(cs_or, abs(spl1));
+
+@gfx 1080 430
+ui_begin(1080, 430);
+// =====================================================================
+// GUI - in the manner of KRT81: a heavy faceplate with steel corner brackets and hex bolts, sharp-cornered sections,
+// black bakelite knobs with printed scales, small capped knobs, a LEVEL / GR meter window. Two looks: VFD (orange and
+// black) and MATRIX (battleship grey, elephant's breath print, cream accent). The three modules sit in their running
+// order; ◄ / ► move them. Design space 1080 x 430. Knobs: drag (SHIFT = fine), wheel, double-click = default; the name
+// shows the value while the knob is touched.
+// =====================================================================
+krv_mx = slider28 >= 0.5;
+!krv_mx ? (                                               // VFD: orange and black
+  KRP = 0x16130F; KRF = 0x0A0908; KRI = 0xFFC79A; KRA = 0xFF8A1F; KRW = 0x050403; KRM = 0x4A4744;
+  KRC = 0xFF8A1F; KRPT = 0x1A0C02; KRCN = 0xFF8A1F; KRGH = 0x1A120B; KRAMB = 0xFFD24A; KRRED = 0xFF3B1F; KRKT = 0x140A02;
+) : (                                                     // MATRIX: battleship grey, elephant's breath, cream
+  KRP = 0x222528; KRF = ui_mix(0x222528, 0x000000, 0.25); KRI = 0xC7BEB3; KRA = 0xF3E5C0; KRW = ui_mix(0x222528, 0x000000, 0.45);
+  KRM = 0x4A4E4A; KRC = 0xF3E5C0; KRPT = 0x17191B; KRCN = 0x1E5631; KRGH = 0x2C302E; KRAMB = 0xD4A373; KRRED = 0xBC3908; KRKT = 0x17191B;
+);
+KRH = ui_mix(KRP, 0x000000, 0.35); KRI2 = ui_mix(KRI, KRF, 0.40);
+// the EQ caps (the house colour code): LOW brown, MID blue, HIGH red
+KCLO = 0x8B5A3C; KCMI = 0x3C6CC8; KCHI = 0xC8402E;
+
+gfx_setfont(6,  "Trebuchet MS", 27 * sc, 'b');
+gfx_setfont(10, "Trebuchet MS", 12 * sc, 'b');
+gfx_setfont(11, "Trebuchet MS", 13 * sc, 'b');
+gfx_setfont(12, "Trebuchet MS", 13 * sc, 'b');
+gfx_setfont(13, "Trebuchet MS", 12 * sc, 'b');
+gfx_setfont(14, "Trebuchet MS", 15 * sc, 'b');
+
+function kr_r(x, y, w, h) ( gfx_rect(x * sc, y * sc, w * sc, h * sc); );
+function kr_txt(x, y, s) ( gfx_x = x * sc; gfx_y = y * sc; gfx_drawstr(s); );
+function kr_ctxt(cx, cy, s) local(tw, th) ( gfx_measurestr(s, tw, th); gfx_x = cx * sc - tw * 0.5; gfx_y = cy * sc - th * 0.5; gfx_drawstr(s); );
+function kr_rtxt(rx, cy, s) local(tw, th) ( gfx_measurestr(s, tw, th); gfx_x = rx * sc - tw; gfx_y = cy * sc - th * 0.5; gfx_drawstr(s); );
+function kr_lbl(x, y, s) ( gfx_setfont(11); ui_col(KRI2); kr_txt(x, y, s); );
+function kr_hov(x, y, w, h) ( mouse_x >= x * sc && mouse_x < (x + w) * sc && mouse_y >= y * sc && mouse_y < (y + h) * sc; );
+function kr_thick(x1, y1, x2, y2, w) local(dx, dy, l, nx, ny, k) (       // (drawn here: works with any system files)
+  dx = x2 - x1; dy = y2 - y1; l = max(sqrt(dx * dx + dy * dy), 0.001); nx = -dy / l; ny = dx / l;
+  k = -0.5 * w; loop(floor(w * 2.5) + 1, gfx_line(x1 + nx * k, y1 + ny * k, x2 + nx * k, y2 + ny * k, 1); k += 0.4; );
+);
+function kr_key(x, y, w, h, lbl, on) local(hov, hit) (
+  hov = kr_hov(x, y, w, h); hit = hov && pressed && drag_id == 0; hit ? drag_id = -1;
+  ui_col(0x050505); kr_r(x, y, w, h);
+  on ? ui_col(KRA) : ui_col(hov ? ui_mix(KRF, 0xFFFFFF, 0.08) : ui_mix(KRF, KRP, 0.5)); kr_r(x + 1, y + 1, w - 2, h - 2);
+  on ? ( ui_cola(KRA, 0.25); kr_r(x - 2, y - 2, w + 4, h + 4); ui_cola(0xFFFFFF, 0.3); kr_r(x + 1, y + 1, w - 2, 1); );
+  on ? ui_col(KRKT) : ui_cola(KRI, 0.85);
+  gfx_setfont(12); kr_ctxt(x + w * 0.5, y + h * 0.5 + 0.5, lbl);
+  hit;
+);
+function kr_dim(x, y, w, h, lbl) ( ui_col(0x050505); kr_r(x, y, w, h); ui_col(ui_mix(KRF, KRP, 0.3)); kr_r(x + 1, y + 1, w - 2, h - 2);
+  ui_col(ui_mix(KRI, KRF, 0.75)); gfx_setfont(12); kr_ctxt(x + w * 0.5, y + h * 0.5 + 0.5, lbl); 0; );
+function kr_sect(x, y, w, h, name) (
+  ui_col(0x040404); kr_r(x, y, w, h); ui_col(KRF); kr_r(x + 1, y + 1, w - 2, h - 2);
+  strlen(name) ? kr_lbl(x + 9, y + 6, name);
+);
+function kr_scale(cx, cy, r, n, nr, labels, minor) local(i, k, k0, len, c, a, ca, sa, m) (
+  len = strlen(labels); k0 = 0; i = 0; k = 0;
+  minor > 0 ? (
+    m = 0; ui_col(KRI2);
+    loop((n - 1) * minor + 1,
+      a = -0.75 * $pi + m / ((n - 1) * minor) * 1.5 * $pi; ca = sin(a); sa = -cos(a);
+      gfx_line((cx + ca * (r + 4)) * sc, (cy + sa * (r + 4)) * sc, (cx + ca * (r + 6)) * sc, (cy + sa * (r + 6)) * sc, 1);
+      m += 1;
+    );
+  );
+  gfx_setfont(10);
+  loop(len + 1,
+    c = k < len ? str_getchar(labels, k) : 124;
+    c == 124 ? (
+      strcpy_substr(#krv_sl, labels, k0, k - k0);
+      a = -0.75 * $pi + i / max(n - 1, 1) * 1.5 * $pi; ca = sin(a); sa = -cos(a);
+      ui_col(KRI);
+      gfx_line((cx + ca * (r + 3)) * sc, (cy + sa * (r + 3)) * sc, (cx + ca * (r + 7)) * sc, (cy + sa * (r + 7)) * sc, 1);
+      strlen(#krv_sl) ? kr_ctxt(cx + ca * (r + nr), cy + sa * (r + nr), #krv_sl);
+      i += 1; k0 = k + 1;
+    );
+    k += 1;
+  );
+);
+function kr_bake(cx, cy, r, a) local(i, t, ca, sa, k) (
+  ca = sin(a); sa = -cos(a);
+  ui_cola(0x000000, 0.55); gfx_circle(cx + 2.5 * sc, cy + 4.5 * sc, r * 1.02, 1, 1);
+  ui_col(0x0A0A0A); gfx_circle(cx, cy, r + 1 * sc, 1, 1);
+  ui_col(0x191817); gfx_circle(cx, cy, r, 1, 1);
+  i = 0;
+  loop(16,
+    t = i / 16 * 2 * $pi; k = 0.5 + 0.5 * cos(t + 0.8);
+    ui_col(ui_mix(0x0D0C0B, 0x48443F, k * 0.8)); gfx_circle(cx + sin(t) * r * 0.86, cy - cos(t) * r * 0.86, r * 0.15, 1, 1);
+    ui_col(0x0D0C0B); gfx_circle(cx + sin(t + 0.196) * r * 0.9, cy - cos(t + 0.196) * r * 0.9, r * 0.075, 1, 1);
+    i += 1;
+  );
+  ui_col(0x090808); gfx_circle(cx, cy, r * 0.70 + 1 * sc, 1, 1);
+  ui_col(0x22201E); gfx_circle(cx, cy, r * 0.70, 1, 1);
+  ui_cola(0xFFFFFF, 0.08); gfx_circle(cx, cy, r * 0.70, 0, 1);
+  ui_col(0x060606); kr_thick(cx + ca * r * 0.18, cy + sa * r * 0.18, cx + ca * r * 0.98, cy + sa * r * 0.98, 4.2 * sc);
+  ui_col(KRA); kr_thick(cx + ca * r * 0.22, cy + sa * r * 0.22, cx + ca * r * 0.95, cy + sa * r * 0.95, 2.5 * sc);
+);
+function kr_scap(cx, cy, r, a, cap) local(ca, sa, k, pc) (
+  ca = sin(a); sa = -cos(a);
+  ui_cola(0x000000, 0.5); gfx_circle(cx + 1.5 * sc, cy + 2.5 * sc, r, 1, 1);
+  ui_col(0x121212); gfx_circle(cx, cy, r, 1, 1);
+  ui_cola(0xFFFFFF, 0.12); gfx_circle(cx, cy, r, 0, 1);
+  k = r * 0.74;
+  ui_col(cap); gfx_circle(cx, cy, k, 1, 1);
+  ui_col(ui_mix(cap, 0x000000, 0.35)); gfx_circle(cx, cy, k, 0, 1);
+  pc = (cap & 255) + ((cap >> 8) & 255) + ((cap >> 16) & 255) > 380 ? KRPT : 0xF4F0E6;
+  ui_col(pc); kr_thick(cx + ca * k * 0.2, cy + sa * k * 0.2, cx + ca * r * 0.94, cy + sa * r * 0.94, 2.6 * sc);
+);
+krv_small = 0; krv_lg = 0; krv_step = 0; krv_cap = 0;
+function kr_kn(v, lo, hi) ( krv_lg ? log(max(v, lo) / lo) / log(hi / lo) : (v - lo) / (hi - lo); );
+function kr_kv(n, lo, hi) ( krv_lg ? lo * exp(n * log(hi / lo)) : lo + n * (hi - lo); );
+function kr_knob(cx, cy, r, idx, lo, hi, def) local(v, n, dx, dy, hov, did) (
+  did = 1700 + idx; v = slider(idx);
+  dx = mouse_x - cx * sc; dy = mouse_y - cy * sc; hov = dx * dx + dy * dy <= sqr((r + 5) * sc);
+  pressed && hov && drag_id == 0 ? (
+    time_precise() - krv_lt < 0.35 && krv_lid == idx ? ( slider(idx) = def; ui_auto(idx); drag_id = -1; krv_lt = 0; ) : (
+      drag_id = did; krv_y = mouse_y; krv_lt = time_precise(); krv_lid = idx; krv_n = kr_kn(v, lo, hi);
+    );
+  );
+  drag_id == did ? (
+    krv_n = min(max(krv_n + (krv_y - mouse_y) / (((mouse_cap & 8) ? 1200 : (krv_step ? 160 : 240)) * sc), 0), 1); krv_y = mouse_y;
+    v = kr_kv(krv_n, lo, hi); krv_step ? v = floor(v + 0.5);
+    slider(idx) != v ? ( slider(idx) = v; ui_auto(idx); );
+  );
+  hov && mouse_wheel != 0 && drag_id == 0 ? (
+    krv_step ? slider(idx) = min(max(floor(v + 0.5) + sign(mouse_wheel), lo), hi) : (
+      n = min(max(kr_kn(v, lo, hi) + mouse_wheel / 120 * ((mouse_cap & 8) ? 0.005 : 0.025), 0), 1);
+      slider(idx) = kr_kv(n, lo, hi);
+    );
+    ui_auto(idx); mouse_wheel = 0;
+  );
+  v = slider(idx); n = min(max(kr_kn(v, lo, hi), 0), 1);
+  krv_small ? kr_scap(cx * sc, cy * sc, r * sc, -0.75 * $pi + n * 1.5 * $pi, krv_cap ? krv_cap : KRC) : kr_bake(cx * sc, cy * sc, r * sc, -0.75 * $pi + n * 1.5 * $pi);
+  hov || drag_id == did ? ( ui_cola(0xFFFFFF, 0.07); gfx_circle(cx * sc, cy * sc, (r + 2) * sc, 1, 1); );
+  hov || drag_id == did;
+);
+function kr_name(cx, cy, act, name, val) ( gfx_setfont(14); ui_col(act ? KRA : KRI); kr_ctxt(cx, cy, act ? val : name); );
+// a small knob with a tick ring (or n step ticks) and its name; the value while touched
+function kr_small(cx, cy, r, idx, lo, hi, def, nt, name, val) local(i, t, act) (
+  ui_cola(KRI, 0.85); i = 0;
+  loop(nt, t = -0.75 * $pi + i / (nt - 1) * 1.5 * $pi;
+    gfx_line((cx + sin(t) * (r + 4)) * sc, (cy - cos(t) * (r + 4)) * sc, (cx + sin(t) * (r + 8)) * sc, (cy - cos(t) * (r + 8)) * sc, 1); i += 1; );
+  krv_small = 1; act = kr_knob(cx, cy, r, idx, lo, hi, def); krv_small = 0;
+  strlen(name) ? ( gfx_setfont(11); ui_col(act ? KRA : KRI); kr_ctxt(cx, cy + r + 15, act ? val : name); );
+  act;
+);
+function kr_cell(x, y, w, h, lit, zone) local(c) (
+  c = zone == 2 ? KRRED : zone == 1 ? KRAMB : KRCN;
+  lit ? ( ui_cola(c, 0.16); kr_r(x - 0.5, y - 1, w + 1, h + 2); ui_col(c); kr_r(x, y, w, h); ui_cola(0xFFFFFF, 0.22); kr_r(x, y, w, 1.5); )
+      : ( ui_col(KRGH); kr_r(x, y, w, h); ui_cola(0x000000, 0.25); kr_r(x, y + h - 1, w, 1); );
+);
+function kr_hbar(x, y, w, h, v) local(n, i, sw, d) (
+  n = 32; sw = w / n; i = 0;
+  loop(n, d = -48 + (i + 0.5) / n * 48; kr_cell(x + i * sw + 0.5, y, sw - 2, h, v >= d, d > -3 ? 2 : d > -12 ? 1 : 0); i += 1; );
+);
+function kr_grbar(x, y, w, h, gr) local(n, i, sw, d) (                     // gain reduction: 0 .. -24 dB, from the left
+  n = 24; sw = w / n; i = 0;
+  loop(n, d = -(i + 0.5); kr_cell(x + i * sw + 0.5, y, sw - 2, h, gr <= d, 1); i += 1; );
+);
+function kr_window(x, y, w, h) ( ui_col(0x040404); kr_r(x, y, w, h); ui_col(KRW); kr_r(x + 1, y + 1, w - 2, h - 2); );
+function kr_bolt(cx, cy, r) local(i, t, k) (
+  ui_cola(0x000000, 0.45); gfx_circle((cx + 1) * sc, (cy + 1.5) * sc, r * sc, 1, 1);
+  ui_col(ui_mix(KRM, 0x000000, 0.45)); gfx_circle(cx * sc, cy * sc, r * sc, 1, 1);
+  ui_col(ui_mix(KRM, 0xFFFFFF, 0.25)); gfx_circle(cx * sc, cy * sc, (r - 1) * sc, 1, 1);
+  i = 0;
+  loop(6,
+    t = i / 6 * 2 * $pi + 0.26; k = 0.5 + 0.5 * cos(t + 0.52 + 0.8);
+    ui_col(ui_mix(ui_mix(KRM, 0x000000, 0.35), ui_mix(KRM, 0xFFFFFF, 0.45), k));
+    gfx_triangle(cx * sc, cy * sc, (cx + cos(t) * r * 0.8) * sc, (cy + sin(t) * r * 0.8) * sc, (cx + cos(t + 1.0472) * r * 0.8) * sc, (cy + sin(t + 1.0472) * r * 0.8) * sc);
+    i += 1;
+  );
+  ui_col(ui_mix(KRM, 0xFFFFFF, 0.12)); gfx_circle(cx * sc, cy * sc, r * 0.48 * sc, 1, 1);
+);
+function kr_bracket(x, y, sx, sy) local(L, T, x0, y0) (
+  L = 64; T = 18; x0 = sx > 0 ? x : x - L; y0 = sy > 0 ? y : y - T;
+  ui_cola(0x000000, 0.35); kr_r(x0 + 1.5, y0 + 2, L, T); kr_r((sx > 0 ? x : x - T) + 1.5, (sy > 0 ? y : y - L) + 2, T, L);
+  ui_col(ui_mix(KRM, 0x000000, 0.4)); kr_r(x0, y0, L, T); kr_r(sx > 0 ? x : x - T, sy > 0 ? y : y - L, T, L);
+  ui_col(KRM); kr_r(x0 + 1, y0 + 1, L - 2, T - 2); kr_r((sx > 0 ? x : x - T) + 1, (sy > 0 ? y : y - L) + 1, T - 2, L - 2);
+  ui_cola(0xFFFFFF, 0.22); kr_r(x0 + 1, y0 + 1, L - 2, 1); kr_r((sx > 0 ? x : x - T) + 1, (sy > 0 ? y : y - L) + 1, 1, L - 2);
+  kr_bolt(x + sx * 10, y + sy * 9.5, 7); kr_bolt(x + sx * (L - 10), y + sy * 9, 4.5); kr_bolt(x + sx * 9, y + sy * (L - 10), 4.5);
+);
+function kr_db(v) ( sprintf(#krd, "%+.1f dB", v); #krd; );
+function kr_tog(idx) ( slider(idx) = slider(idx) >= 0.5 ? 0 : 1; ui_auto(idx); );
+// move module m one place left (dir -1) or right (+1)
+function kr_move(m, dir) local(p, a, b, c, q, t) (
+  q = floor(min(max(slider2, 0), 5) + 0.5); p = 0;
+  CS_PERM[q * 3 + 1] == m ? p = 1; CS_PERM[q * 3 + 2] == m ? p = 2;
+  a = CS_PERM[q * 3]; b = CS_PERM[q * 3 + 1]; c = CS_PERM[q * 3 + 2];
+  dir < 0 && p == 1 ? ( t = a; a = b; b = t; ) : dir < 0 && p == 2 ? ( t = b; b = c; c = t; ) :
+  dir > 0 && p == 0 ? ( t = a; a = b; b = t; ) : dir > 0 && p == 1 ? ( t = b; b = c; c = t; );
+  slider2 = cs_perm_of(a, b, c); ui_auto(2);
+);
+function kr_hz(f) ( f >= 1000 ? sprintf(#krh, "%g kHz", f / 1000) : sprintf(#krh, "%d Hz", floor(f + 0.5)); #krh; );
+
+// ---------- one module's section at slot s ----------
+function kr_module(m, s) local(x, w, y, inn, a, c, base, cx, f) (
+  w = 341; x = 22 + s * 347; y = 212;
+  kr_sect(x, y, w, 196, m == 0 ? "PREAMP" : m == 1 ? "EQ" : "COMP");
+  gfx_setfont(13); ui_col(KRI2); kr_txt(x + 9, y + 22, m == 0 ? "WARM INPUT STAGE" : m == 1 ? "STEPPED PARAMETRIC" : "VCA COMPRESSOR / LIMITER");
+  // ◄ / ► and IN
+  s > 0 ? ( kr_key(x + w - 132, y + 8, 30, 24, "◄", 0) ? kr_move(m, -1); ) : kr_dim(x + w - 132, y + 8, 30, 24, "◄");
+  s < 2 ? ( kr_key(x + w - 98, y + 8, 30, 24, "►", 0) ? kr_move(m, 1); ) : kr_dim(x + w - 98, y + 8, 30, 24, "►");
+  inn = m == 0 ? 3 : m == 1 ? 5 : 15;
+  kr_key(x + w - 62, y + 8, 52, 24, "IN", slider(inn) >= 0.5) ? kr_tog(inn);
+  m == 0 ? (
+    kr_scale(x + 110, y + 112, 38, 11, 18, "0|1|2|3|4|5|6|7|8|9|10", 0);
+    a = kr_knob(x + 110, y + 112, 38, 4, 0, 10, 3); sprintf(#krv, "%.1f  +%.1f dB", slider4, 2.4 * slider4); kr_name(x + 110, y + 172, a, "DRIVE", #krv);
+    // the supply read-out
+    kr_window(x + 216, y + 72, 106, 64);
+    gfx_setfont(13); ui_col(KRI2); kr_txt(x + 226, y + 80, "SUPPLY");
+    gfx_setfont(14); ui_col(KRA); sprintf(#krv, "%.1f V", 18 * csa_v); kr_txt(x + 226, y + 100, #krv);
+    c = min(max((csa_v - 0.82) / 0.18, 0), 1); ui_col(ui_mix(KRRED, KRCN, c)); gfx_circle((x + 306) * sc, (y + 86) * sc, 4 * sc, 1, 1);
+    gfx_setfont(13); ui_col(KRI2); kr_txt(x + 216, y + 146, "DRIFT:"); kr_txt(x + 216, y + 161, "VOLTAGE, DRIVE"); kr_txt(x + 216, y + 176, "AND BIAS");
+  ) : m == 1 ? (
+    // three columns: LOW / MID / HIGH; rows FREQ, WIDTH, GAIN
+    // row names on the left; three columns (LOW / MID / HIGH), each knob's setting always shown under it
+    gfx_setfont(11); ui_col(KRI2); kr_txt(x + 12, y + 70, "FREQ"); kr_txt(x + 12, y + 114, "WIDTH"); kr_txt(x + 12, y + 158, "GAIN");
+    f = 0;
+    loop(3,
+      cx = x + 112 + f * 86; base = f == 0 ? 6 : f == 1 ? 9 : 12;
+      c = f == 0 ? KCLO : f == 1 ? KCMI : KCHI;
+      gfx_setfont(11); ui_col(KRI); kr_ctxt(cx - 18, y + 46, f == 0 ? "LOW" : f == 1 ? "MID" : "HIGH");
+      krv_step = 1; krv_cap = c;
+      kr_small(cx - 18, y + 76, 13, base, 0, 7, f == 0 ? 2 : f == 1 ? 4 : 5, 8, "",
+        kr_hz(f == 0 ? cs_lf(floor(slider(base) + 0.5)) : f == 1 ? cs_mf(floor(slider(base) + 0.5)) : 125 * 2 ^ floor(slider(base) + 0.5)));
+      gfx_setfont(13); ui_col(KRA); kr_txt(cx + 6, y + 70, #krh);
+      sprintf(#krq, "Q %g", cs_q(floor(slider(base + 1) + 0.5)));
+      kr_small(cx - 18, y + 120, 13, base + 1, 0, 4, 2, 5, "", #krq);
+      gfx_setfont(13); ui_col(KRA); kr_txt(cx + 6, y + 114, #krq);
+      sprintf(#krg, "%+d dB", -20 + 4 * floor(slider(base + 2) + 0.5));
+      kr_small(cx - 18, y + 164, 13, base + 2, 0, 10, 5, 11, "", #krg);
+      gfx_setfont(13); ui_col(KRA); kr_txt(cx + 6, y + 158, #krg);
+      krv_step = 0; krv_cap = 0;
+      f += 1;
+    );
+  ) : (
+    kr_key(x + 18, y + 44, 70, 24, "AUTO", slider20 >= 0.5) ? kr_tog(20);
+    kr_key(x + 94, y + 44, 92, 24, "SOFT KNEE", slider21 >= 0.5) ? kr_tog(21);
+    kr_scale(x + 70, y + 132, 30, 5, 18, "-40|-30|-20|-10|0", 2);
+    a = kr_knob(x + 70, y + 132, 30, 16, -40, 0, -20); sprintf(#krv, "%.1f dBFS", slider16); kr_name(x + 70, y + 182, a, "THRESHOLD", #krv);
+    slider17 >= 20.95 ? strcpy(#krr, "INF : 1") : sprintf(#krr, "%.1f : 1", slider17);
+    kr_small(x + 160, y + 108, 14, 17, 1, 21, 3, 11, "RATIO", #krr);
+    krv_lg = 1;
+    sprintf(#kra, "%.1f ms", slider18); kr_small(x + 222, y + 108, 14, 18, 0.1, 100, 10, 11, "ATTACK", #kra);
+    sprintf(#krl, "%d ms", floor(slider19 + 0.5)); kr_small(x + 284, y + 108, 14, 19, 20, 2000, 200, 11, "RELEASE", #krl);
+    krv_lg = 0;
+    slider20 >= 0.5 ? ( ui_cola(KRF, 0.6); kr_r(x + 196, y + 84, 120, 60); gfx_setfont(13); ui_col(KRA); kr_ctxt(x + 253, y + 150, "AUTO"); );
+    kr_small(x + 160, y + 166, 14, 22, -20, 20, 0, 11, "MAKEUP", kr_db(slider22));
+    kr_small(x + 222, y + 166, 14, 23, -20, 0, -1, 11, "PEAK", kr_db(slider23));
+    kr_key(x + 258, y + 154, 64, 24, "LIMIT", slider24 >= 0.5) ? kr_tog(24);
+  );
+);
+
+// =====================================================================
+// Faceplate and header
+// =====================================================================
+ui_col(ui_mix(KRP, 0x000000, 0.35)); gfx_rect(0, 0, gfx_w, gfx_h);
+ui_cola(0xFFFFFF, 0.08); kr_r(0, 0, 1080, 1.5); kr_r(0, 0, 1.5, 430);
+ui_cola(0x000000, 0.35); kr_r(0, 428.5, 1080, 1.5); kr_r(1078.5, 0, 1.5, 430);
+ui_col(KRP); kr_r(12, 12, 1056, 406);
+ui_cola(0x000000, 0.30); kr_r(12, 12, 1056, 1.5); kr_r(12, 12, 1.5, 406);
+ui_cola(0xFFFFFF, 0.07); kr_r(12, 416.5, 1056, 1.5); kr_r(1066.5, 12, 1.5, 406);
+ui_col(KRH); kr_r(13.5, 13.5, 1053, 50.5);
+ui_col(KRA); kr_r(13.5, 64, 1053, 2);
+ui_col(KRA); gfx_circle(45 * sc, 39 * sc, 16 * sc, 1, 1);
+gfx_setfont(4); ui_col(KRKT); ui_text(45 * sc, 33.5 * sc, "GFX");
+gfx_setfont(6); ui_col(KRI); kr_txt(72, 24, "CH34"); gfx_measurestr("CH34", krv_tw, krv_th);
+krv_tx = 72 + krv_tw / sc + 14;
+gfx_setfont(11); ui_col(KRI2); kr_txt(krv_tx, 25, "CHANNEL STRIP"); kr_txt(krv_tx, 40, "PREAMP · EQ · COMP");
+pk_pextra = "Reset all to defaults";
+k_ = pk_preset(470 * sc, 22 * sc, 300 * sc, 34 * sc, pr_cur, #cs_pm);
+k_ > 0 ? load_preset(k_);
+kr_key(796, 25, 56, 28, "VFD", krv_mx == 0) ? ( slider28 = 0; ui_auto(28); );
+kr_key(856, 25, 66, 28, "MATRIX", krv_mx == 1) ? ( slider28 = 1; ui_auto(28); );
+ui_size_picker(1000 * sc, 30 * sc);
+
+// =====================================================================
+// Upper row (y 72 .. 206): INPUT, LEVEL / GR, DRIFT, BYPASS, OUTPUT
+// =====================================================================
+kr_sect(22, 72, 112, 134, "INPUT");
+kr_scale(78, 146, 26, 5, 20, "-12|-6|0|+6|+12", 2);
+krv_a = kr_knob(78, 146, 26, 1, -12, 12, 0); kr_name(78, 192, krv_a, "TRIM", kr_db(slider1));
+
+kr_sect(140, 72, 590, 134, "");
+kr_window(146, 78, 578, 122);
+gfx_setfont(11); ui_col(KRI); kr_txt(154, 83, "LEVEL"); ui_col(KRI2); kr_txt(204, 83, "L / R"); kr_rtxt(716, 90, "dBFS");
+function kr_fall(v, pk) ( pk = pk > 0.0000001 ? 20 * log10(pk) : -90; pk > v ? pk : max(v - 0.6, -90); );
+krv_il = kr_fall(krv_il, csa_pl); krv_ir = kr_fall(krv_ir, csa_pr); krv_ol = kr_fall(krv_ol, csa_ol); krv_or = kr_fall(krv_or, csa_or);
+csa_pl = csa_pr = csa_ol = csa_or = 0;
+krv_gr = csa_gr < krv_gr ? csa_gr : min(krv_gr + 0.5, 0); csa_gr = 0;
+kr_hbar(214, 102, 500, 9, krv_il); kr_hbar(214, 113, 500, 9, krv_ir);
+kr_grbar(214, 133, 500, 10, krv_gr);
+kr_hbar(214, 154, 500, 9, krv_ol); kr_hbar(214, 165, 500, 9, krv_or);
+gfx_setfont(11); ui_col(KRI); kr_rtxt(208, 112, "IN"); kr_rtxt(208, 138, "GR"); kr_rtxt(208, 164, "OUT");
+gfx_setfont(13); krv_i = 0;
+loop(5,
+  krv_d = krv_i == 0 ? -48 : krv_i == 1 ? -36 : krv_i == 2 ? -24 : krv_i == 3 ? -12 : 0;
+  krv_xx = 214 + (krv_d + 48) / 48 * 500;
+  ui_col(krv_d > -12.5 ? KRAMB : KRI2); kr_r(krv_xx - 0.5, 180, 1, 4);
+  sprintf(#krv_tl, "%d", krv_d); kr_ctxt(krv_xx - (krv_i == 4 ? 4 : 0), 191, #krv_tl);
+  krv_i += 1;
+);
+sprintf(#krv_g, "GR %.1f dB", krv_gr); gfx_setfont(11); ui_col(KRAMB); kr_rtxt(716, 125, #krv_g);
+
+kr_sect(736, 72, 116, 134, "DRIFT");
+sprintf(#krv, "%d%%", floor(slider27 + 0.5)); kr_small(794, 136, 17, 27, 0, 100, 50, 11, "DRIFT", #krv);
+kr_sect(858, 72, 82, 134, "");
+kr_key(866, 116, 66, 44, "BYPASS", slider26 >= 0.5) ? kr_tog(26);
+kr_sect(946, 72, 112, 134, "OUTPUT");
+kr_scale(1002, 146, 26, 5, 20, "-12|-6|0|+6|+12", 2);
+krv_a = kr_knob(1002, 146, 26, 25, -12, 12, 0); kr_name(1002, 192, krv_a, "TRIM", kr_db(slider25));
+
+// =====================================================================
+// Lower row (y 212 .. 408): the three modules in their running order
+// =====================================================================
+krv_o = floor(min(max(slider2, 0), 5) + 0.5);
+kr_module(CS_PERM[krv_o * 3], 0); kr_module(CS_PERM[krv_o * 3 + 1], 1); kr_module(CS_PERM[krv_o * 3 + 2], 2);
+
+kr_bracket(0, 0, 1, 1); kr_bracket(1080, 0, -1, 1); kr_bracket(0, 430, 1, -1); kr_bracket(1080, 430, -1, -1);
+
+pk_end();
+ui_end();
