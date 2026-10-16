@@ -35,7 +35,7 @@ ls, nxt = sliders_lanes([("Clave",0),("Wood hi",-30),("Wood lo",-40),("Agogo hi"
 sl += ls + """slider24:2400<1500,3500,1>-Clave tune (Hz)
 slider25:0.5<0.15,0.95,0.01>-Clave decay
 slider26:950<500,1500,1>-Woodblock tune (Hz)
-slider27:1<0.3,3,0.01>-Woodblock decay
+slider27:0.45<0.15,0.85,0.01>-Woodblock decay
 slider28:950<600,1600,1>-Agogo tune (Hz)
 slider29:1<0.3,3,0.01>-Agogo decay
 slider30:6<0,10,0.1>-Hardness
@@ -70,7 +70,7 @@ function ins_trig(k, v, a) local(f, d, m, h) (
 );
 function ins_block() (
   cv_ct = min(max(slider24, 1500), 3500); cv_cd = min(max(slider25, 0.15), 0.95);
-  cv_wt = min(max(slider26, 500), 1500); cv_wd = min(max(slider27, 0.3), 3);
+  cv_wt = min(max(slider26, 500), 1500); cv_wd = min(max(slider27, 0.15), 0.85);
   cv_at = min(max(slider28, 600), 1600); cv_ad = min(max(slider29, 0.3), 3);
   cv_hd = min(max(slider30, 0), 10);
   pc_k = 0; loop(NL, XN[pc_k] = pc_tn(XN[pc_k]); XH[pc_k] = pc_tn(XH[pc_k]); pc_k += 1; );
@@ -95,25 +95,25 @@ function clv_set(ct, cd, wt, wd, at, ad, hd) ( !pc_po ? (
   slider10 = slider13 = slider16 = slider19 = slider22 = 0; slider11 = 0; slider14 = -30; slider17 = -40; slider20 = 30; slider23 = 40; ); );
 function clv_none() ( pc_pat(1, "................"); pc_pat(2, "................"); pc_pat(3, "................"); pc_pat(4, "................"); );
 function load_preset(p) local(i) (
-  p == 1 || p == 13 ? ( pc_seq(3, 0, 15, 5); clv_set(2400, 0.5, 950, 1, 950, 1, 6); pc_pat(0, "X..X..X...X.X..."); clv_none(); ) :
-  p == 2  ? ( pc_seq(3, 0, 15, 5); clv_set(2400, 0.5, 950, 1, 950, 1, 6); pc_pat(0, "..X.X...X..X..X."); clv_none(); ) :
-  p == 3  ? ( pc_seq(3, 0, 15, 5); clv_set(2300, 0.55, 950, 1, 950, 1, 6); pc_pat(0, "X..X...X..X.X..."); clv_none(); ) :
-  p == 4  ? ( pc_seq(3, 0, 10, 4); clv_set(2200, 0.45, 950, 1, 950, 1, 5); pc_pat(0, "X..X..X...X..X.."); clv_none(); ) :
-  p == 5  ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 1000, 1, 950, 1, 7); pc_pat(0, "................"); clv_none();
+  p == 1 || p == 13 ? ( pc_seq(3, 0, 15, 5); clv_set(2400, 0.5, 950, 0.45, 950, 1, 6); pc_pat(0, "X..X..X...X.X..."); clv_none(); ) :
+  p == 2  ? ( pc_seq(3, 0, 15, 5); clv_set(2400, 0.5, 950, 0.45, 950, 1, 6); pc_pat(0, "..X.X...X..X..X."); clv_none(); ) :
+  p == 3  ? ( pc_seq(3, 0, 15, 5); clv_set(2300, 0.55, 950, 0.45, 950, 1, 6); pc_pat(0, "X..X...X..X.X..."); clv_none(); ) :
+  p == 4  ? ( pc_seq(3, 0, 10, 4); clv_set(2200, 0.45, 950, 0.45, 950, 1, 5); pc_pat(0, "X..X..X...X..X.."); clv_none(); ) :
+  p == 5  ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 1000, 0.45, 950, 1, 7); pc_pat(0, "................"); clv_none();
               pc_pat(1, "x.x.x.x.x.x.x.x."); pc_pat(2, "X.......X......."); ) :
-  p == 6  ? ( pc_seq(3, 5, 20, 6); clv_set(2400, 0.5, 950, 1, 900, 1.1, 6); pc_pat(0, "................"); clv_none();
+  p == 6  ? ( pc_seq(3, 5, 20, 6); clv_set(2400, 0.5, 950, 0.45, 900, 1.1, 6); pc_pat(0, "................"); clv_none();
               pc_pat(3, "X.X..X.X.X..X.X."); pc_pat(4, ".X..X...X.X..X.."); ) :
-  p == 7  ? ( pc_seq(2, 0, 15, 6); clv_set(2400, 0.5, 950, 1, 1000, 1.2, 7); pc_pat(0, "............"); clv_none();
+  p == 7  ? ( pc_seq(2, 0, 15, 6); clv_set(2400, 0.5, 950, 0.45, 1000, 1.2, 7); pc_pat(0, "............"); clv_none();
               pc_pat(3, "X.X.XX.X.X.X"); pc_pat(4, "............"); ) :
-  p == 8  ? ( pc_seq(3, 0, 15, 5); clv_set(2400, 0.5, 900, 1, 950, 1, 6); pc_pat(0, "................"); clv_none();
+  p == 8  ? ( pc_seq(3, 0, 15, 5); clv_set(2400, 0.5, 900, 0.45, 950, 1, 6); pc_pat(0, "................"); clv_none();
               pc_pat(1, "X..x..X.X..x..X."); pc_pat(2, "...x.......x...."); ) :
-  p == 9  ? ( pc_seq(3, 0, 20, 5); clv_set(2400, 0.5, 800, 1.6, 950, 1, 4); pc_pat(0, "................"); clv_none();
+  p == 9  ? ( pc_seq(3, 0, 20, 5); clv_set(2400, 0.5, 800, 0.7, 950, 1, 4); pc_pat(0, "................"); clv_none();
               pc_pat(1, "X...x.x...X.x..."); pc_pat(2, "..x...X.x...x.X."); ) :
-  p == 10 ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 950, 1, 950, 1, 6); pc_pat(0, "X..X..X...X.X..."); clv_none();
+  p == 10 ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 950, 0.45, 950, 1, 6); pc_pat(0, "X..X..X...X.X..."); clv_none();
               pc_pat(3, "X.X.X.XXX.X.X.XX"); pc_pat(4, ".X.X.X...X.X.X.."); ) :
-  p == 11 ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 950, 1, 950, 1, 6); pc_pat(0, "X..X..X...X.X..."); clv_none();
+  p == 11 ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 950, 0.45, 950, 1, 6); pc_pat(0, "X..X..X...X.X..."); clv_none();
               pc_pat(1, "x.x.x.X"); pc_pat(3, "X.x.x.X.x.x."); ) :
-  p == 12 ? ( pc_seq(3, 8, 25, 7); clv_set(2500, 0.5, 1000, 1, 950, 1, 8); pc_pat(0, "..X.X...X..X..X."); clv_none();
+  p == 12 ? ( pc_seq(3, 8, 25, 7); clv_set(2500, 0.5, 1000, 0.45, 950, 1, 8); pc_pat(0, "..X.X...X..X..X."); clv_none();
               pc_pat(1, "x.xxx.xxx.xxx.xx"); pc_pat(2, "X.......X......."); pc_pat(3, "X.X..X.X.X..X.X."); pc_pat(4, ".X..X...X.X..X.."); );
   p == 13 && !pc_po ? ( slider5 = 0; slider6 = 0; slider7 = 50; slider8 = 0; );
   !pc_po ? ( i = 1; loop(30, ui_auto(i); i += 1; ); pr_cur = p == 13 ? 1 : p; );
@@ -130,7 +130,7 @@ gfx_setfont(10); ui_col(KRI2); kr_ctxt(167, pv_y + 172, "HARDWOOD STICKS");
 function pv_pair(x, tu, de, l1, l2, p1, p2, dt, dp1, dp2, nm, sub) (
   kr_sect(x, pv_y, 368, 190, nm);
   sprintf(#pv1, "%d Hz", floor(slider(tu) + 0.5)); pv_k(x + 40, pv_ky, tu, nm == "AGOGO" ? 600 : 500, nm == "AGOGO" ? 1600 : 1500, dt, 1, "TUNE", #pv1);
-  sprintf(#pv2, "x %.2f", slider(de)); pv_k(x + 96, pv_ky, de, 0.3, 3, 1, 1, "DECAY", #pv2);
+  sprintf(#pv2, "x %.2f", slider(de)); de === 27 ? pv_k(x + 96, pv_ky, de, 0.15, 0.85, 0.45, 1, "DECAY", #pv2) : pv_k(x + 96, pv_ky, de, 0.3, 3, 1, 1, "DECAY", #pv2);
   sprintf(#pv3, "%+.1f", slider(l1)); pv_k(x + 152, pv_ky, l1, -24, 6, 0, 0, "HI LVL", #pv3);
   sprintf(#pv4, "%+.1f", slider(l2)); pv_k(x + 208, pv_ky, l2, -24, 6, 0, 0, "LO LVL", #pv4);
   sprintf(#pv5, "%+d", floor(slider(p1) + 0.5)); pv_k(x + 264, pv_ky, p1, -100, 100, dp1, 0, "HI PAN", #pv5);
