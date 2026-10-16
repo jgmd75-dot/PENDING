@@ -13,6 +13,7 @@ folder, as usual.
   Multi Transat   gfx-multi-transat.jsfx   Mastering       3-band saturation, transients, width
   CH34            gfx-ch34.jsfx            Dynamics        preamp + drive / parametric EQ / VCA comp strip, EQ-comp swap
   SUP34           gfx-sup34.jsfx           Dynamics        console strip: VHD preamp, filters, comp, gate, E/G EQ, routing
+  GLU34           gfx-glu34.jsfx           Dynamics        stereo bus compressor: stepped controls, auto release, VCA drive, SC HPF, ext key
   BOB34           gfx-bob34.jsfx           Modulation      modular rack: ladder LP, ring mod, phaser, filter array, saturator + CV
   BUS34           gfx-bus34.jsfx           Mastering       stereo colour unit: drive, shelves, HF comp, image, transformer
 
@@ -21,7 +22,7 @@ Ready to release together:
 Waiting:
   Amps & drive  FYRE + two more drives -> 18 + 3 = 21
   Mastering     Multi Transat + BUS34 + one more mastering unit -> 12 + 3 = 15
-  Dynamics      CH34 + SUP34 + one more dynamics unit -> 15 + 3 = 18
+  Dynamics      CH34 + SUP34 + GLU34 -> 15 + 3 = 18  (ready)
   Modulation    BOB34 + two more modulation units -> 21 + 3 = 24
 
 Manuals/   manual pages, one-page sections and images (TRDI, FYRE, Multi Transat so far)
