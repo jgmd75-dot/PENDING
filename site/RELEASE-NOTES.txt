@@ -3,17 +3,11 @@ What to put back when these are released (copied out when they were pulled back,
 MANUAL INDEX (TRDI), in its category list:
 <a href="gfx-trdi.html">TRDI<span>A passive transformer DI: a 1:1 nickel-iron core with soft low-end saturation.</span></a>
 
-MANUAL INDEX (FYRE), in its category list:
-<a href="gfx-fyre.html">FYRE<span>A vintage British 3-in-1 tone rack: clean boost, treble booster and fuzz, in any order.</span></a>
-
 MANUAL INDEX (MSAT), in its category list:
 <a href="gfx-msat.html">MSAT<span>Three-band analogue saturation with per-band transient shaping and stereo width.</span></a>
 
 README line (TRDI):
   TRDI            gfx-trdi.jsfx
-
-README line (FYRE):
-  FYRE            gfx-fyre.jsfx
 
 README line (MSAT):
   MSAT            gfx-msat.jsfx
@@ -21,43 +15,25 @@ README line (MSAT):
 WEBSITE CARD (TRDI), in index.html's P list:
   ["TRDI", "gfx-trdi", "util", "A passive transformer DI with a 1:1 nickel-iron core: flat from 20 Hz to 20 kHz, and soft magnetic saturation that lands on the lows first when you push it. Input load, ground lift, RF filter, polarity and the box's 1 dB insertion loss.", ["Ni-Fe core", "level-compensated drive", "10 presets"]],
 
-WEBSITE CARD (FYRE), in index.html's P list:
-  ["FYRE", "gfx-fyre", "amp", "A vintage British 3-in-1 tone rack: a clean boost with sparkle, a single-transistor treble booster (germanium or silicon, treble, full or mid) and a thick two-transistor fuzz that cleans up with your volume knob. Move the three into any order with the arrow keys; changes are click-free.", ["boost / treble / fuzz", "any order", "12 presets"]],
-
 WEBSITE CARD (MSAT), in index.html's P list:
   ["MSAT", "gfx-msat", "mast", "Three-band analogue saturation in the spirit of a mid-70s British design: a phase-aligned crossover that sums flat, and on every band a transient shaper, warm level-compensated drive with parallel mix, and stereo width, with SOLO and MUTE per band. Heat-and-bias drift, and VFD / MATRIX looks.", ["3 bands", "transients + saturation + width", "solo / mute per band"]],
 
 GLANCE ROW (TRDI), glance/utilities.html:
 <tr><td class="n"><a href="../img/gfx-trdi.webp"><img src="../img/gfx-trdi.webp" alt="TRDI" loading="lazy"><b>TRDI</b><span>Panel</span></a><div class="acts"><a href="../manual/gfx-trdi.pdf" target="_blank" rel="noopener">Manual PDF</a><a class="js-dl" href="../files/gfx-trdi.jsfx" data-file="gfx-trdi.jsfx" title="Needs the GFX system files in the same folder">Download</a><a class="sys" href="../files/GFX-system-files.zip" title="Download once - works for every plug-in">+ System files</a></div></td><td>Passive transformer DI boxes</td><td><ul><li>1:1 nickel-iron core, 20 Hz - 20 kHz</li><li>Soft low-end saturation, level-compensated</li><li>Load, lift, RF filter, polarity</li></ul></td><td>DI bass, kick and low synths with weight</td></tr>
 
-GLANCE ROW (FYRE), glance/amps.html:
-<tr><td class="n"><a href="../img/gfx-fyre.webp"><img src="../img/gfx-fyre.webp" alt="FYRE" loading="lazy"><b>FYRE</b><span>Panel</span></a><div class="acts"><a href="../manual/gfx-fyre.pdf" target="_blank" rel="noopener">Manual PDF</a><a class="js-dl" href="../files/gfx-fyre.jsfx" data-file="gfx-fyre.jsfx" title="Needs the GFX system files in the same folder">Download</a><a class="sys" href="../files/GFX-system-files.zip" title="Download once - works for every plug-in">+ System files</a></div></td><td>British 60s / 70s boost, treble booster and fuzz pedals</td><td><ul><li>Clean boost with sparkle</li><li>Treble booster: GE / SI, treble / full / mid</li><li>Two-transistor fuzz that cleans up, any order</li></ul></td><td>Classic British lead tones, stacked any way</td></tr>
-
 GLANCE ROW (MSAT), glance/mastering.html:
 <tr><td class="n"><a href="../img/gfx-msat.webp"><img src="../img/gfx-msat.webp" alt="MSAT" loading="lazy"><b>MSAT</b><span>Panel</span></a><div class="acts"><a href="../manual/gfx-msat.pdf" target="_blank" rel="noopener">Manual PDF</a><a class="js-dl" href="../files/gfx-msat.jsfx" data-file="gfx-msat.jsfx" title="Needs the GFX system files in the same folder">Download</a><a class="sys" href="../files/GFX-system-files.zip" title="Download once - works for every plug-in">+ System files</a></div></td><td>Mid-70s British three-band saturation units</td><td><ul><li>Phase-aligned 3-band split</li><li>Per-band transients, drive, mix, width, solo / mute</li><li>Heat drift, VFD / MATRIX looks</li></ul></td><td>Warmth, punch and width on buses and masters</td></tr>
 
-(Added Oct 2026: KBH77 and PRE3.)
+(Added Oct 2026: KBH77.)
 
 MANUAL INDEX (KBH77), in its category list:
 <a href="gfx-kbh77.html">KBH77<span>A 1970s Danish broadcast channel: filter, presence EQ, compressor / expander with hold and gate, and a log-clip limiter.</span></a>
 
-MANUAL INDEX (PRE3), in its category list:
-<a href="gfx-pre3.html">PRE3<span>Three overlooked studio preamps in one box, each with its own face. Neutral at DRIVE 0.</span></a>
-
 README line (KBH77):
   KBH77           gfx-kbh77.jsfx
-
-README line (PRE3):
-  PRE3            gfx-pre3.jsfx
 
 WEBSITE CARD (KBH77), in index.html's P list:
   ["KBH77", "gfx-kbh77", "dyn", "A 1970s Danish broadcast channel in slim cassettes: an 18 dB/oct filter, a presence equaliser, a compressor / expander whose output stays constant at its reference level (GAIN lifts the quiet parts, RATIO pulls everything in), HOLD, a gate and a safety limiter with a logarithmic clipping circuit. Oven-heated drift, VFD / MATRIX looks.", ["constant-output comp / exp", "hold + gate", "log-clip limiter"]],
 
-WEBSITE CARD (PRE3), in index.html's P list:
-  ["PRE3", "gfx-pre3", "amp", "Three overlooked studio preamps, each with its own face: WEST, warm discrete and iron with a woody low-mid; JH, a punchy high-headroom console op-amp; AERO, fast, clean and aerospace-grade. DRIVE is a trim below 0, neutral at 0 and the model's colour above it, with gain matching. Supply-and-iron drift.", ["3 preamp models", "neutral at 0", "gain match"]],
-
 GLANCE ROW (KBH77), glance/dynamics.html:
 <tr><td class="n"><a href="../img/gfx-kbh77.webp"><img src="../img/gfx-kbh77.webp" alt="KBH77" loading="lazy"><b>KBH77</b><span>Panel</span></a><div class="acts"><a href="../manual/gfx-kbh77.pdf" target="_blank" rel="noopener">Manual PDF</a><a class="js-dl" href="../files/gfx-kbh77.jsfx" data-file="gfx-kbh77.jsfx" title="Needs the GFX system files in the same folder">Download</a><a class="sys" href="../files/GFX-system-files.zip" title="Download once - works for every plug-in">+ System files</a></div></td><td>1970s Danish broadcast channel cassettes</td><td><ul><li>18 dB/oct filters and a presence EQ</li><li>Constant-output comp / exp, HOLD, gate</li><li>Log-clip limiter, oven drift, VFD / MATRIX</li></ul></td><td>Voice-over, dialogue and radio-ready vocals</td></tr>
-
-GLANCE ROW (PRE3), glance/amps.html:
-<tr><td class="n"><a href="../img/gfx-pre3.webp"><img src="../img/gfx-pre3.webp" alt="PRE3" loading="lazy"><b>PRE3</b><span>Panel</span></a><div class="acts"><a href="../manual/gfx-pre3.pdf" target="_blank" rel="noopener">Manual PDF</a><a class="js-dl" href="../files/gfx-pre3.jsfx" data-file="gfx-pre3.jsfx" title="Needs the GFX system files in the same folder">Download</a><a class="sys" href="../files/GFX-system-files.zip" title="Download once - works for every plug-in">+ System files</a></div></td><td>Rare 70s / 80s studio and console preamps</td><td><ul><li>WEST: discrete + iron, woody low-mid</li><li>JH: punchy high-headroom op-amp</li><li>AERO: fast, clean aerospace solid state</li></ul></td><td>Gentle colour and weight on any track</td></tr>
