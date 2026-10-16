@@ -53,6 +53,8 @@ out_pin:left output
 out_pin:right output
 
 @init
+gdc_r = 1 - 2 * $pi / srate;                            // input DC blocker, 1 Hz (first order)
+gdc_x0 = gdc_y0 = 0; gdc_x1 = gdc_y1 = 0;
 #ui_man = "gfx-pre3";                                  // the ? pop-up links to this manual
 ext_noinit = 1;
 
@@ -261,6 +263,9 @@ p3_pi0 = p3_pi1 = p3_po0 = p3_po1 = 0; p3_sat = 0;
 file_var(0, ui_sz); file_var(0, pr_cur);
 
 @sample
+// ---------- input DC blocker, 1 Hz: no offset reaches the nonlinear stages ----------
+gdc_y0 = spl0 - gdc_x0 + gdc_r * gdc_y0; gdc_x0 = spl0; spl0 = gdc_y0;
+gdc_y1 = spl1 - gdc_x1 + gdc_r * gdc_y1; gdc_x1 = spl1; spl1 = gdc_y1;
 p3_il = spl0; p3_ir = spl1;
 p3_pi0 = max(p3_pi0, abs(p3_il)); p3_pi1 = max(p3_pi1, abs(p3_ir));
 p3_drv += (p3_tdrv - p3_drv) * p3_psm; p3_out += (p3_tout - p3_out) * p3_psm;
