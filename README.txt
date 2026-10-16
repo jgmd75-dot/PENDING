@@ -18,7 +18,6 @@ folder, as usual.
   CH34            gfx-ch34.jsfx            Dynamics        preamp + drive / parametric EQ / VCA comp strip, EQ-comp swap
   SUP34           gfx-sup34.jsfx           Dynamics        console strip: VHD preamp, filters, comp, gate, E/G EQ, routing
   GLU34           gfx-glu34.jsfx           Dynamics        stereo bus compressor: stepped controls, auto release, VCA drive, SC HPF, ext key
-  BOB34           gfx-bob34.jsfx           Modulation      modular rack: ladder LP, ring mod, phaser, filter array, saturator + CV
   COM34           gfx-com34.jsfx           Mastering       stepped diode-bridge compressor: auto ratio, soft, bass, link
   BUS34           gfx-bus34.jsfx           Mastering       stereo colour unit: drive, shelves, HF comp, image, transformer
   KBH77           gfx-kbh77.jsfx           Dynamics        broadcast strip: 18 dB/oct filters, presence EQ, comp / exp + hold + gate, log-clip limiter
@@ -32,7 +31,6 @@ Ready to release together:
   Amps & drive  FYRE + BED34 + PRE3   -> 18 + 3 = 21
 Waiting:
   Dynamics      KBH77 + two more dynamics units -> (after the group above) 18 + 3 = 21
-  Modulation    BOB34 + two more modulation units -> 21 + 3 = 24
 
 Manuals/   manual pages, one-page sections and images (TRDI, FYRE, MSAT, KBH77, PRE3 so far)
 site/      website card images, manual PDFs and RELEASE-NOTES.txt (the exact lines to put back)
