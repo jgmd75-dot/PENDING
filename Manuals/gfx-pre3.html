@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GFX PRE3 - manual</title><meta name="description" content="Three overlooked studio preamps in one box, each with its own face: West Coast discrete and iron, a 70s / 80s console op-amp, and an aerospace-grade solid-state design. Neutral at DRIVE 0.">
+<style>
+:root{--bg:#0e0f11;--panel:#1b1d21;--panel-2:#23262b;--line:#2f3238;--ink:#e9e7e2;--ink-2:#b4b2ad;--ink-3:#85837e;--accent:#e0603a;--accent-2:#e8b23a}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-2)}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+.top{position:sticky;top:0;z-index:5;background:rgba(14,15,17,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;height:56px}
+.badge{width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--panel);display:grid;place-items:center;font-weight:700;font-size:10px;flex:none}
+.top a.home{color:var(--ink);text-decoration:none;font-weight:700;letter-spacing:1px}
+.top nav{margin-left:auto;display:flex;gap:16px;font-size:14px}.top nav a{color:var(--ink-2);text-decoration:none}
+h1{font-size:clamp(28px,5vw,42px);margin:28px 0 4px;line-height:1.1}
+.cat{color:var(--ink-3);font-size:13px;letter-spacing:.6px;text-transform:uppercase;font-weight:700}
+.tagline{color:var(--ink-2);font-size:18px;margin:6px 0 18px}
+.shot{background:#0b0c0d;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:0 0 20px}
+.shot img{display:block;width:100%;height:auto}
+h2{font-size:22px;margin:34px 0 10px;padding-top:6px;border-top:1px solid var(--line)}
+h3{font-size:17px;margin:22px 0 8px;color:var(--accent-2)}
+p{margin:0 0 12px;color:var(--ink-2)}
+ul.when{margin:0 0 12px;padding-left:20px;color:var(--ink-2)}
+dl.ctl{margin:0;display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+dl.ctl dt,dl.ctl dd{margin:0;padding:10px 14px;border-top:1px solid var(--line)}
+dl.ctl dt:first-of-type,dl.ctl dd:first-of-type{border-top:0}
+dl.ctl dt{background:var(--panel-2);font-weight:700;font-size:14px;letter-spacing:.3px}
+dl.ctl dd{background:var(--panel);color:var(--ink-2);font-size:15px}
+ol.steps{color:var(--ink-2);padding-left:22px}ol.steps li{margin:0 0 6px}
+.tips li{color:var(--ink-2);margin:0 0 6px}
+.file{font:13px ui-monospace,Menlo,Consolas,monospace;color:var(--ink-3)}
+code{font:13px ui-monospace,Menlo,Consolas,monospace;background:var(--panel-2);border:1px solid var(--line);padding:1px 5px;border-radius:4px;color:var(--ink)}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:24px 0 40px;color:var(--ink-3);font-size:14px}
+.toc{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:10px;margin:10px 0 24px}
+.toc a{display:block;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;text-decoration:none;color:var(--ink)}
+.toc a span{display:block;color:var(--ink-3);font-size:13px}
+.manual + .manual{margin-top:60px}
+@media (max-width:600px){dl.ctl{grid-template-columns:1fr}dl.ctl dd{border-top:0;padding-top:2px}}
+@media print{body{background:#fff;color:#000}.top,footer{display:none}p,dl.ctl dd,ul.when,.tips li,ol.steps{color:#222}
+ dl.ctl dt{background:#eee}dl.ctl dd{background:#fff}dl.ctl,dl.ctl dt,dl.ctl dd,h2{border-color:#ccc}h3{color:#7a4a10}.manual{break-before:page}.manual:first-of-type{break-before:auto}a{color:#000}}
+</style></head><body>
+<header class="top"><div class="wrap"><span class="badge">GFX</span><a class="home" href="index.html">GFX</a>
+<nav><a href="index.html">All manuals</a><a href="all.html">One page</a><a href="https://www.gardenfx.uk/">Website</a></nav></div></header>
+<main class="wrap"><section class="manual" id="gfx-pre3">
+<div class="cat">Amps &amp; drive</div><h1>PRE3</h1>
+<p class="tagline">Three overlooked studio preamps in one box, each with its own face: West Coast discrete and iron, a 70s / 80s console op-amp, and an aerospace-grade solid-state design. Neutral at DRIVE 0.</p>
+<div class="shot"><img src="img/gfx-pre3.webp" alt="The PRE3 panel, WEST face, on West Vocal" loading="lazy"></div><div class="shot"><img src="img/gfx-pre3-jh.webp" alt="The PRE3 panel, JH face, on JH Punch Drums" loading="lazy"></div><div class="shot"><img src="img/gfx-pre3-aero.webp" alt="The PRE3 panel, AERO face, on Aero Transient" loading="lazy"></div>
+<h2>Overview</h2><p>PRE3 holds three preamp topologies, chosen with the WEST / JH / AERO keys in the header. The model sets the sound and the face together. The sound is designed from scratch.</p><p>DRIVE is the heart of it. Below 0 it is a plain trim that turns the level down and nothing else. At 0 the preamp is neutral: the model's EQ, curve and iron are faded out and the signal passes untouched. Above 0 the model fades in over the first 3 dB and is driven up to +15 dB. With AUTO on, the drive is taken back out after the preamp, so DRIVE changes the colour rather than the level.</p><p>The curves are anti-aliased, and only the part the curve adds is processed, so while a model is not bending the signal it stays flat to the top of the band. Stereo, both sides identical, no latency. The house output stage (CLIP, always on) catches overs at the end.</p>
+<h3>Reach for it for</h3><ul class="when"><li>Warmth and weight on vocals, bass and keys (WEST)</li><li>Punch on drums and a firm edge on a hot bus (JH)</li><li>Clean gain and snap that keeps transients sharp (AERO)</li><li>A quick trim at the top of a chain (DRIVE below 0)</li></ul>
+<h2>The three models</h2><dl class="ctl"><dt>WEST</dt><dd>A 70s West Coast discrete-transistor and transformer preamp. A woody low-mid lift (+1.5 dB at 280 Hz) goes into a soft, asymmetric curve for 2nd and 3rd harmonic thickness; the output iron saturates the lows on their own, and the top rolls off gently and golden (-0.8 dB at 16 kHz). It colours earliest: warm from about +6 on a -18 dBFS signal. Brushed gold and walnut face.</dd><dt>JH</dt><dd>A 70s / 80s American console preamp. Flat, with a touch of low weight (+0.6 dB below 80 Hz), and a lot of headroom: completely clean until its op-amp reaches the rail, then a firm, proportional clip. On hotter material it starts to bite from about +6. Console blue-grey face.</dd><dt>AERO</dt><dd>An aerospace-derived solid-state preamp. Flat and fast with a hint of air (+0.4 dB at 20 kHz), the most headroom of the three, and a hard / soft limit whose knee softens as it is driven. No pre-filter at all, so nothing smears the transients. It colours only loud material. Aerospace white face.</dd></dl><p>Changing the model fades the sound out, switches at the silent point and fades back in, so it never clicks.</p>
+<h2>Controls</h2><h3>The header</h3><dl class="ctl"><dt>PRESETS</dt><dd>Opens the full preset list.</dd><dt>&#9668; / &#9658;</dt><dd>Step to the previous or next preset (wrapping round).</dd><dt>Preset display</dt><dd>Shows the preset name. Click it for the preset list too.</dd><dt>WEST / JH / AERO</dt><dd>The model: the sound and the face together (see The three models).</dd><dt>S / M / L</dt><dd>Panel size: small, medium or large.</dd><dt>?</dt><dd>The design credit, the GFX website and the address of this manual.</dd></dl>
+<h3>INPUT</h3><dl class="ctl"><dt>DRIVE</dt><dd>-12 to +15 dB, with 0 at the top of the knob. The left half is a trim (cuts the level only); 0 is neutral; the right half drives the model. The ring lights from the centre.</dd><dt>HPF</dt><dd>High-pass, 12 dB/oct, before the preamp: OFF, 30, 50, 80, 120 or 180 Hz (OFF by default). Steps glide, so changes never click.</dd><dt>AUTO</dt><dd>GAIN MATCH, lit by default: the drive is taken back out after the preamp, so the level stays put as you add colour. It only compensates the drive side; the trim side always turns the level down.</dd></dl>
+<h3>Meters</h3><p>IN (before DRIVE) and OUT (after OUTPUT), peak, -48 to 0 dBFS, left and right. The SAT lamp lights while the curve is bending the signal; the model's name sits beside it.</p>
+<h3>OUTPUT</h3><dl class="ctl"><dt>OUTPUT</dt><dd>The output level, -24 to +24 dB (0 dB by default).</dd><dt>DRIFT</dt><dd>See DRIFT below (50% by default).</dd><dt>BYPASS</dt><dd>Lit = bypassed. A click-free 20 ms crossfade to the untouched input.</dd></dl><p>Knobs: drag up or down (Shift for fine moves) or use the mouse wheel; double-click to reset a knob to its default. A knob's value replaces its name while you touch it.</p>
+<h2>DRIFT</h2><p>DRIFT is supply and iron. Loud passages sag the supply: the headroom drops a little and comes back over about 120 ms (WEST most, JH less, AERO hardly at all). The bias and iron wander slowly on each side, so the balance of 2nd to 3rd harmonic breathes. 50% is the standard amount, 100% twice that, 0% steady.</p>
+<h2>Presets</h2><p>Presets set the model, DRIVE, OUTPUT, HPF and AUTO. DRIFT and BYPASS are left as they are. The list also has Reset all to defaults.</p><dl class="ctl"><dt>Init</dt><dd>WEST at DRIVE 0: neutral.</dd><dt>West Vocal</dt><dd>WEST, DRIVE +5, HPF 80 Hz.</dd><dt>West Bass Iron</dt><dd>WEST, DRIVE +8, HPF 30 Hz, OUTPUT -1 dB.</dd><dt>West Drums</dt><dd>WEST, DRIVE +11, HPF 50 Hz, OUTPUT -2 dB.</dd><dt>JH Punch Drums</dt><dd>JH, DRIVE +8, HPF 50 Hz.</dd><dt>JH Clean Gain</dt><dd>JH, DRIVE +4, HPF 80 Hz.</dd><dt>JH Hot Bus</dt><dd>JH, DRIVE +12, HPF 30 Hz, OUTPUT -2 dB.</dd><dt>Aero Clean Lift</dt><dd>AERO, DRIVE +5, HPF 80 Hz.</dd><dt>Aero Transient</dt><dd>AERO, DRIVE +10, HPF 50 Hz.</dd><dt>Aero Hard Edge</dt><dd>AERO, DRIVE +15, HPF 30 Hz, OUTPUT -3 dB.</dd><dt>Reset all to defaults</dt><dd>(Last in the list.) Init, with DRIFT 50% and BYPASS off.</dd></dl>
+<h2>Tips</h2><ul class="tips"><li>Start at 0 and raise DRIVE until the SAT lamp just flickers on the loudest notes: that is where each model starts to show its character.</li><li>Use the left half of DRIVE to tame a hot source before the rest of the chain.</li><li>Try the same DRIVE on all three models: WEST thickens, JH tightens, AERO stays out of the way until it is pushed hard.</li><li>PRE3 is light on CPU: put one on every track you like.</li></ul>
+<p class="file">File: gfx-pre3.jsfx</p></section></main>
+<footer><div class="wrap">GFX (Garden FX) - free JSFX plug-ins for REAPER. Designed by JGWizrad. <a href="https://www.gardenfx.uk/">https://www.gardenfx.uk/</a> &copy; 2026 John Garden.</div></footer></body></html>

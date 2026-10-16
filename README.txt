@@ -34,7 +34,7 @@ Waiting:
   Dynamics      KBH77 + two more dynamics units -> (after the group above) 18 + 3 = 21
   Modulation    BOB34 + two more modulation units -> 21 + 3 = 24
 
-Manuals/   manual pages, one-page sections and images (TRDI, FYRE, MSAT so far)
+Manuals/   manual pages, one-page sections and images (TRDI, FYRE, MSAT, KBH77, PRE3 so far)
 site/      website card images, manual PDFs and RELEASE-NOTES.txt (the exact lines to put back)
 
 Copyright (c) 2026 John Garden.
