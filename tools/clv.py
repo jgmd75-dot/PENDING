@@ -1,5 +1,5 @@
 import sys; import os; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); from common import *
-HDR = """desc:GFX CLV34 [clave, woodblocks + agogo]
+HDR = """desc:GFX G CLV34 [clave, woodblocks + agogo]
 //tags: percussion clave woodblock temple block agogo bell latin step sequencer procedural synthesis drum machine
 //author: JGWizrad / Garden FX (GFX)
 //
@@ -51,7 +51,7 @@ slider32:0<0,1,1{Off,On}>-Tune to notes
 INS = r"""
 NL = 5;
 CVK = 4250; CVK[0] = 0.52; CVK[1] = 0.344; CVK[2] = 0.272; CVK[3] = 0.226; CVK[4] = 0.286;   // (each voice's output trim)
-#ui_man = "gfx-clv34";
+#ui_man = "gfx-g-clv34";
 cv_lap = 0;                                           // (LATE LAST as applied to the pattern)
 XN = 4210; XD = 4240; XW = 4260; XP = 4270; XA = 4280; XH = 4290;   // per lane: the knock and its decay; the stick's pulse
 // =====================================================================
@@ -180,4 +180,4 @@ function pv_pair(x, tu, de, l1, l2, p1, p2, dt, dp1, dp2, nm, sub) (
 pv_pair(318, 26, 27, 13, 16, 14, 17, 950, -30, -40, "WOODBLOCK", "A HOLLOW BLOCK, HIGH AND LOW");
 pv_pair(690, 28, 29, 19, 22, 20, 23, 950, 30, 40, "AGOGO", "TWO IRON BELLS, HIGH AND LOW");
 """
-build(os.path.dirname(os.path.abspath(__file__)) + '/../gfx-clv34.jsfx', HDR, sl, INS, SETS, gfx("CLV34","CLAVE, WOODBLOCKS","AND AGOGO","0xC27A5A","0xF3E2D8",["CLAVE","WOOD HI","WOOD LO","AGOGO HI","AGOGO LO"],PANEL))
+build(os.path.dirname(os.path.abspath(__file__)) + '/../gfx-g-clv34.jsfx', HDR, sl, INS, SETS, gfx("CLV34","CLAVE, WOODBLOCKS","AND AGOGO","0xC27A5A","0xF3E2D8",["CLAVE","WOOD HI","WOOD LO","AGOGO HI","AGOGO LO"],PANEL))

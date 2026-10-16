@@ -1,5 +1,5 @@
 import sys; import os; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); from common import *
-HDR = """desc:GFX BEL34 [cowbell + triangle]
+HDR = """desc:GFX G BEL34 [cowbell + triangle]
 //tags: percussion cowbell campana triangle metal step sequencer procedural synthesis drum machine
 //author: JGWizrad / Garden FX (GFX)
 //
@@ -43,7 +43,7 @@ slider22:3<0,10,0.1>-Triangle soft
 INS = r"""
 NL = 2;
 CBG = 0.25; TRG = 0.07;                                     // (the instruments' output trims)
-#ui_man = "gfx-bel34";
+#ui_man = "gfx-g-bel34";
 // =====================================================================
 // THE INSTRUMENTS
 // =====================================================================
@@ -134,4 +134,4 @@ sprintf(#pl, "%+.1f dB", slider13); pv_k(916, pv_ky, 13, -24, 6, 0, 0, "LEVEL", 
 sprintf(#pm, "%+d", floor(slider14 + 0.5)); pv_k(996, pv_ky, 14, -100, 100, 20, 0, "PAN", #pm);
 gfx_setfont(10); ui_col(KRI2); kr_ctxt(803, pv_y + 172, "A STEEL ROD AND ITS RINGING PARTIALS - THE BEATER'S STRIKE");
 """
-build(os.path.dirname(os.path.abspath(__file__)) + '/../gfx-bel34.jsfx', HDR, sl, INS, SETS, gfx("BEL34","COWBELL AND","TRIANGLE","0xE0B64A","0xF5EAD0",["COWBELL","TRIANGLE"],PANEL))
+build(os.path.dirname(os.path.abspath(__file__)) + '/../gfx-g-bel34.jsfx', HDR, sl, INS, SETS, gfx("BEL34","COWBELL AND","TRIANGLE","0xE0B64A","0xF5EAD0",["COWBELL","TRIANGLE"],PANEL))

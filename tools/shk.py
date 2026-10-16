@@ -1,5 +1,5 @@
 import sys; import os; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); from common import *
-HDR = """desc:GFX SHK34 [shakers + tambourine]
+HDR = """desc:GFX G SHK34 [shakers + tambourine]
 //tags: percussion shaker egg maracas tambourine step sequencer procedural synthesis drum machine
 //author: JGWizrad / Garden FX (GFX)
 //
@@ -46,7 +46,7 @@ slider23:5<0,10,0.1>-Tambourine rattle
 INS = r"""
 NL = 2;
 SHG = 0.45; TBG = 0.24;                                     // (the instruments' output trims)
-#ui_man = "gfx-shk34";
+#ui_man = "gfx-g-shk34";
 // =====================================================================
 // THE INSTRUMENTS
 // =====================================================================
@@ -148,4 +148,4 @@ sprintf(#pl, "%+.1f dB", slider13); pv_k(966, pv_ky, 13, -24, 6, 0, 0, "LEVEL", 
 sprintf(#pm, "%+d", floor(slider14 + 0.5)); pv_k(1028, pv_ky, 14, -100, 100, 25, 0, "PAN", #pm);
 gfx_setfont(10); ui_col(KRI2); kr_ctxt(848, pv_y + 172, "A FRAME HIT RINGS FIVE METAL JINGLES");
 """
-build(os.path.dirname(os.path.abspath(__file__)) + '/../gfx-shk34.jsfx', HDR, sl, INS, SETS, gfx("SHK34","SHAKERS AND","TAMBOURINE","0xD8C08A","0xF2E8D2",["SHAKER","TAMBOURINE"],PANEL))
+build(os.path.dirname(os.path.abspath(__file__)) + '/../gfx-g-shk34.jsfx', HDR, sl, INS, SETS, gfx("SHK34","SHAKERS AND","TAMBOURINE","0xD8C08A","0xF2E8D2",["SHAKER","TAMBOURINE"],PANEL))

@@ -9,9 +9,9 @@ folder, as usual.
   TRDI            gfx-trdi.jsfx            Utilities       transformer DI
   ALIGN           gfx-align.jsfx           Utilities       phase / time alignment
   CHECK           gfx-check.jsfx           Utilities       mix-translation monitor controller
-  SHK34           gfx-shk34.jsfx           Drums           shakers + tambourine, step sequencer
-  BEL34           gfx-bel34.jsfx           Drums           cowbell + triangle, step sequencer
-  CLV34           gfx-clv34.jsfx           Drums           clave, woodblocks + agogo, step sequencer
+  SHK34           gfx-g-shk34.jsfx         Drums           shakers + tambourine, step sequencer
+  BEL34           gfx-g-bel34.jsfx         Drums           cowbell + triangle, step sequencer
+  CLV34           gfx-g-clv34.jsfx         Drums           clave, woodblocks + agogo, step sequencer
   CH34            gfx-ch34.jsfx            Dynamics        preamp + drive / parametric EQ / VCA comp strip, EQ-comp swap
   SUP34           gfx-sup34.jsfx           Dynamics        console strip: VHD preamp, filters, comp, gate, E/G EQ, routing
   GLU34           gfx-glu34.jsfx           Dynamics        stereo bus compressor: stepped controls, auto release, VCA drive, SC HPF, ext key
