@@ -12,16 +12,16 @@ desc:GFX CH34 [channel strip]
 //   PREAMP  DRIVE -24 .. +24 dB (0): the input trim and the drive in one. Below 0 it turns the strip's input down,
 //           above 0 it pushes the preamp's gently lopsided transistor stage harder (house clipper: ADAA, drive-tracking
 //           pre-filter and knee). Not level-compensated: it is the gain into the strip. With the preamp's IN key out
-//           DRIVE is a clean trim. In: a 20 Hz coupling high-pass, the transistor stage, a little low-mid warmth (+1 dB
+//           DRIVE is a clean trim. SC HPF (OFF, 20 .. 300 Hz): only what is above it goes through the transistor stage;
+//           the lows go round it clean and are added back, so the bass stays solid and unmuddied as it is driven. It
+//           rises with DRIVE, an octave for every 12 dB above 0 (x4 at +24 dB). In: a 20 Hz coupling high-pass, the transistor stage, a little low-mid warmth (+1 dB
 //           shelf at 180 Hz) and the delay's input filter (a 13 kHz roll-off).
 //   EQ      three peaking bands. FREQ stepped as on the hardware:
 //             LOW  31, 62, 125, 250, 500 Hz, 1, 2, 4 kHz      MID  62 Hz .. 8 kHz      HIGH  125 Hz .. 16 kHz
 //           WIDTH (Q) 0.25 .. 4 and GAIN -20 .. +20 dB sweep. Every change glides (80 ms): no zipper, no click.
 //   COMP    a feed-forward VCA compressor with a true-RMS detector (linked stereo): THRESHOLD -40 .. 0 dBFS, RATIO
 //           1:1 .. 20:1 and INF, ATTACK 0.1 .. 100 ms, RELEASE 20 ms .. 2 s, SOFT KNEE (10 dB), AUTO (program-dependent
-//           attack and release; it overrides ATTACK and RELEASE), MAKEUP -20 .. +20 dB, and SC HPF: a 12 dB/oct high-pass on the
-//           detector (OFF, 20 .. 300 Hz) that rises with DRIVE, an octave for every 12 dB above 0 (x4 at +24 dB), so
-//           the harder the strip is driven, the less the lows pump the compressor.
+//           attack and release; it overrides ATTACK and RELEASE), and MAKEUP -20 .. +20 dB.
 //   ORDER   EQ > COMP or COMP > EQ. A change runs the new chain alongside the old one for 40 ms, then crossfades into it
 //           over 25 ms: no click. IN keys fade each module in / out (10 ms).
 //   DRIFT   (0 - 100 %, 50 % = standard, 0 = none): "voltage, drive, bias" - the supply sags with what the preamp
@@ -105,7 +105,7 @@ function cs_equpd(k) local(m) (
     cs_peak(0, cs_lf_, cs_lq_, cs_lg_); cs_peak(1, cs_mf_, cs_mq_, cs_mg_); cs_peak(2, cs_hf_, cs_hq_, cs_hg_);
   );
 );
-// the sidechain high-pass (12 dB/oct, Q 0.707): SCC[0..4]
+// the SC HPF in front of the drive (12 dB/oct, Q 0.707): SCC[0..4]
 SCC = 140;
 function cs_schp(f) local(w, cw, al, n) (
   w = 2 * $pi * min(max(f, 10), 0.45 * srate) / srate; cw = cos(w); al = sin(w) / (2 * 0.70710678); n = 1 + al;
@@ -121,11 +121,15 @@ CS_PERM[3] = 0; CS_PERM[4] = 2; CS_PERM[5] = 1;      // P C E
 // THE MODULES - each instance holds both sides' state; they read and write the pair cs_a / cs_b (left / right)
 // =====================================================================
 // ---- PREAMP (DRIVE is applied before it: this is the colour) ----
-function pr_run() instance(hpL, hpR, wL, wR, l1L, l2L, l1R, l2R, rest) local(xl, xr) (
+function pr_run() instance(hpL, hpR, wL, wR, l1L, l2L, l1R, l2R, rest, z1L, z2L, z1R, z2R) local(xl, xr, hl, hr) (
   xl = cs_a - hpL; hpL += pr_khp * (cs_a - hpL); xr = cs_b - hpR; hpR += pr_khp * (cs_b - hpR);
+  // SC HPF: only what is above it goes through the transistor stage; the lows go round it, clean (always running)
+  hl = SCC[0] * xl + z1L; z1L = SCC[1] * xl - SCC[3] * hl + z2L; z2L = SCC[2] * xl - SCC[4] * hl;
+  hr = SCC[0] * xr + z1R; z1R = SCC[1] * xr - SCC[3] * hr + z2R; z2R = SCC[2] * xr - SCC[4] * hr;
+  cs_lo = pr_sce * (xl - hl); cs_ro = pr_sce * (xr - hr); xl -= cs_lo; xr -= cs_ro;   // (faded in / out: 20 ms)
   xl = this.cL.clp_pf_run(xl); xr = this.cR.clp_pf_run(xr);
-  xl = (this.cL.clp_run(xl * 0.6 + pr_b) - rest) * 1.6666667;           // the transistor stage (ADAA), unity small-signal
-  xr = (this.cR.clp_run(xr * 0.6 + pr_b) - rest) * 1.6666667;
+  xl = (this.cL.clp_run(xl * 0.6 + pr_b) - rest) * 1.6666667 + cs_lo;   // the transistor stage (ADAA), unity small-signal
+  xr = (this.cR.clp_run(xr * 0.6 + pr_b) - rest) * 1.6666667 + cs_ro;
   wL += pr_kw * (xl - wL); xl += 0.122 * wL; wR += pr_kw * (xr - wR); xr += 0.122 * wR;   // low-mid warmth
   l1L += pr_klp * (xl - l1L); l2L += pr_klp * (l1L - l2L);              // the delay's input filter (2 poles)
   l1R += pr_klp * (xr - l1R); l2R += pr_klp * (l1R - l2R);
@@ -140,11 +144,12 @@ function pr_cfg(n) instance(rest) (
   rest = this.cL.clp_crv(pr_b);
 );
 function pr_prime() ( this.cL.x1 = this.cR.x1 = pr_b; this.cL.ad1 = this.cR.ad1 = this.cL.clp_ad(pr_b); );
-function pr_reset() instance(hpL, hpR, wL, wR, l1L, l2L, l1R, l2R) (
-  hpL = hpR = wL = wR = l1L = l2L = l1R = l2R = 0;
+function pr_reset() instance(hpL, hpR, wL, wR, l1L, l2L, l1R, l2R, z1L, z2L, z1R, z2R) (
+  hpL = hpR = wL = wR = l1L = l2L = l1R = l2R = z1L = z2L = z1R = z2R = 0;
   this.cL.clp_reset(); this.cR.clp_reset(); this.cL.clp_pf_reset(); this.cR.clp_pf_reset();
 );
-function pr_tidy() instance(hpL, hpR, wL, wR, l1L, l2L, l1R, l2R) (
+function pr_tidy() instance(hpL, hpR, wL, wR, l1L, l2L, l1R, l2R, z1L, z2L, z1R, z2R) (
+  z1L = cs_tn(z1L); z2L = cs_tn(z2L); z1R = cs_tn(z1R); z2R = cs_tn(z2R);
   hpL = cs_tn(hpL); hpR = cs_tn(hpR); wL = cs_tn(wL); wR = cs_tn(wR);
   l1L = cs_tn(l1L); l2L = cs_tn(l2L); l1R = cs_tn(l1R); l2R = cs_tn(l2R);
   this.cL.clp_tidy(); this.cR.clp_tidy();
@@ -166,12 +171,10 @@ function eq_tidy() (
   this.m1.s1 = cs_tn(this.m1.s1); this.m1.s2 = cs_tn(this.m1.s2); this.h1.s1 = cs_tn(this.h1.s1); this.h1.s2 = cs_tn(this.h1.s2);
 );
 
-// ---- COMP: SC HPF, true-RMS detector (linked), static curve (soft or hard knee), attack / release on the gain, VCA,
+// ---- COMP: true-RMS detector (linked), static curve (soft or hard knee), attack / release on the gain, VCA,
 //      makeup ----
-function cp_run() instance(ms, gdb, fst, slw, grm, z1L, z2L, z1R, z2R) local(x2, lv, ov, k, tgt, g, dl, dr) (
-  dl = SCC[0] * cs_a + z1L; z1L = SCC[1] * cs_a - SCC[3] * dl + z2L; z2L = SCC[2] * cs_a - SCC[4] * dl;   // (always running:
-  dr = SCC[0] * cs_b + z1R; z1R = SCC[1] * cs_b - SCC[3] * dr + z2R; z2R = SCC[2] * cs_b - SCC[4] * dr;   //  warm when switched)
-  x2 = cp_scon ? 0.5 * (dl * dl + dr * dr) : 0.5 * (cs_a * cs_a + cs_b * cs_b);
+function cp_run() instance(ms, gdb, fst, slw, grm) local(x2, lv, ov, k, tgt, g) (
+  x2 = 0.5 * (cs_a * cs_a + cs_b * cs_b);
   ms += cp_krms * (x2 - ms);                                           // the RMS average (5 ms)
   lv = 10 * log10(max(ms, 0.0000000001)) + 3.0103;                     // dB, a sine reads its peak
   ov = lv - cp_th;                                                     // over the threshold
@@ -191,8 +194,8 @@ function cp_run() instance(ms, gdb, fst, slw, grm, z1L, z2L, z1R, z2R) local(x2,
   g = exp(0.115129255 * (gdb + cp_mk));                                // the VCA and the makeup
   cs_a *= g; cs_b *= g;
 );
-function cp_reset() instance(ms, gdb, fst, slw, z1L, z2L, z1R, z2R) ( ms = 0; gdb = fst = slw = 0; z1L = z2L = z1R = z2R = 0; );
-function cp_tidy() instance(ms, z1L, z2L, z1R, z2R) ( ms = cs_tn(ms); z1L = cs_tn(z1L); z2L = cs_tn(z2L); z1R = cs_tn(z1R); z2R = cs_tn(z2R); );
+function cp_reset() instance(ms, gdb, fst, slw) ( ms = 0; gdb = fst = slw = 0; );
+function cp_tidy() instance(ms) ( ms = cs_tn(ms); );
 
 // ---------- one chain set: the three modules in the order o, each faded by its IN key ----------
 function set_run(xl, xr, o) local(k, m, ol, or) (
@@ -242,7 +245,8 @@ function cs_srinit() (
   cp_krms = cs_tc(5); cp_kpr = cs_tc(60);
   cp_kaf = cs_tc(2); cp_krf = cs_tc(60); cp_kas = cs_tc(30); cp_krs = cs_tc(900);
   cs_fst = 1 / (0.01 * srate);                        // IN keys: 10 ms
-  cs_xst = 1 / (0.025 * srate);                       // the order crossfade: 25 ms
+  cs_xst = 1 / (0.025 * srate);
+  cs_sst = 1 / (0.02 * srate);                        // SC HPF in / out: 20 ms                       // the order crossfade: 25 ms
   cs_gsm = 1 - exp(-1 / (0.015 * srate));
   cs_eqk = 1 - exp(-32 / (0.08 * srate));             // the EQ glide: 80 ms
   cs_eat = cs_tc(30); cs_ert = cs_tc(1200);           // the supply: draw / recovery
@@ -306,9 +310,11 @@ cp_ka = cs_tc(min(max(slider17, 0.1), 100)); cp_kr = cs_tc(min(max(slider18, 20)
 cp_auto = slider19 >= 0.5; cp_soft = slider20 >= 0.5;
 cs_mkt = min(max(slider21, -20), 20); cs_snap ? cp_mk = cs_mkt; cp_mk += (cs_mkt - cp_mk) * cs_gl;
 cp_ceil = 10 ^ (min(max(slider22, -20), 0) / 20); cp_pon = slider23 >= 0.5;
-// SC HPF: the set point, raised an octave for every 12 dB of DRIVE above 0
-cp_scon = slider24 >= 20;
-cs_scf = min(max(slider24, 20), 300) * 2 ^ (min(max(cs_drdb, 0), 24) / 12); cs_schp(cs_scf);
+// SC HPF (the drive's): the set point, raised an octave for every 12 dB of DRIVE above 0
+pr_scon = slider24 >= 20;
+cs_snap ? ( pr_scg = pr_scon; pr_sce = pr_scg; );
+pr_scon || cs_snap ? cs_scb = min(max(slider24, 20), 300);                   // (held while it fades out)
+cs_scf = cs_scb * 2 ^ (min(max(cs_drdb, 0), 24) / 12); cs_schp(cs_scf);
 csa_scf = cs_scf;
 cs_outt = 10 ^ (min(max(slider25, -12), 12) / 20);
 // the chain sets: the preamp's clipper set-up; a set that has just been reset starts at rest
@@ -340,6 +346,7 @@ cs_xf > 0 ? ( cs_wu > 0 ? cs_wu -= 1 : ( cs_xf += cs_xst; cs_xf >= 1 ? ( cs_xf =
 cs_ex = cs_xf * cs_xf * (3 - 2 * cs_xf);
 // glides (the EQ's every 32 samples: 80 ms)
 (cs_eqcnt += 1) >= 32 ? ( cs_eqcnt = 0; cs_equpd(cs_eqk); );
+pr_scg != pr_scon ? ( pr_scg = pr_scon ? min(pr_scg + cs_sst, 1) : max(pr_scg - cs_sst, 0); pr_sce = pr_scg * pr_scg * (3 - 2 * pr_scg); );
 cs_dgs += (cs_dg - cs_dgs) * cs_gsm;
 cs_outs += (cs_outt - cs_outs) * cs_gsm;
 // DRIVE, then the chain
