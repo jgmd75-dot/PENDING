@@ -19,10 +19,10 @@ folder, as usual.
 
 Ready to release together:
   Utilities     TRDI + ALIGN + CHECK  -> 6 + 3 = 9
+  Dynamics      CH34 + SUP34 + GLU34  -> 15 + 3 = 18
 Waiting:
   Amps & drive  FYRE + two more drives -> 18 + 3 = 21
   Mastering     Multi Transat + BUS34 + one more mastering unit -> 12 + 3 = 15
-  Dynamics      CH34 + SUP34 + GLU34 -> 15 + 3 = 18  (ready)
   Modulation    BOB34 + two more modulation units -> 21 + 3 = 24
 
 Manuals/   manual pages, one-page sections and images (TRDI, FYRE, Multi Transat so far)
