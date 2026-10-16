@@ -14,7 +14,7 @@ folder, as usual.
   CLV34           gfx-clv34.jsfx           Drums           clave, woodblocks + agogo, step sequencer
   BED34           gfx-bed34.jsfx           Amps & drive    practice amps (3 models x 3 speakers) + broken speaker
   FYRE            gfx-fyre.jsfx            Amps & drive    boost / treble booster / fuzz rack
-  Multi Transat   gfx-multi-transat.jsfx   Mastering       3-band saturation, transients, width
+  MSAT            gfx-msat.jsfx            Mastering       3-band saturation, transients, width, solo / mute
   CH34            gfx-ch34.jsfx            Dynamics        preamp + drive / parametric EQ / VCA comp strip, EQ-comp swap
   SUP34           gfx-sup34.jsfx           Dynamics        console strip: VHD preamp, filters, comp, gate, E/G EQ, routing
   GLU34           gfx-glu34.jsfx           Dynamics        stereo bus compressor: stepped controls, auto release, VCA drive, SC HPF, ext key
@@ -25,13 +25,13 @@ folder, as usual.
 Ready to release together:
   Utilities     TRDI + ALIGN + CHECK  -> 6 + 3 = 9
   Dynamics      CH34 + SUP34 + GLU34  -> 15 + 3 = 18
-  Mastering     Multi Transat + BUS34 + COM34 -> 12 + 3 = 15
+  Mastering     MSAT + BUS34 + COM34 -> 12 + 3 = 15
   Drums         SHK34 + BEL34 + CLV34 -> 6 + 3 = 9
 Waiting:
   Amps & drive  FYRE + BED34 + one more drive -> 18 + 3 = 21
   Modulation    BOB34 + two more modulation units -> 21 + 3 = 24
 
-Manuals/   manual pages, one-page sections and images (TRDI, FYRE, Multi Transat so far)
+Manuals/   manual pages, one-page sections and images (TRDI, FYRE, MSAT so far)
 site/      website card images, manual PDFs and RELEASE-NOTES.txt (the exact lines to put back)
 
 Copyright (c) 2026 John Garden.
