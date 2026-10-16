@@ -17,7 +17,7 @@ desc:GFX SUP34 [channel strip]
 //           threshold and closes 4 dB below), RELEASE 0.1 .. 4 s, HOLD 0 .. 4 s; attack 1 ms, FAST 0.1 ms. EXP: a 1:2
 //           downward expander instead of a gate (down to RANGE).
 //   EQ      four bands, two circuits. LF shelf 30 .. 450 Hz, LMF 200 Hz .. 2.5 kHz, HMF 600 Hz .. 7 kHz (Q 0.5 .. 2.5),
-//           HF shelf 1.5 .. 16 kHz; every gain -15 .. +15 dB (black gain caps in E, pink in G). E: constant Q, plain shelves; its keys turn the LF and HF
+//           HF shelf 1.5 .. 16 kHz; every gain -15 .. +15 dB (black gain caps in E; pink in G, cream on MATRIX). E: constant Q, plain shelves; its keys turn the LF and HF
 //           into bells. G: the mids' Q tightens as they are pushed, the shelves dip before they lift (and vice versa);
 //           its keys divide the LMF's frequency by 3 and multiply the HMF's by 3. Every change glides (60 ms); a shelf
 //           / bell change fades the band out and back in: no click.
@@ -526,7 +526,7 @@ function kr_bake(cx, cy, r, a) local(i, t, ca, sa, k) (
   ui_col(krv_bc ? krv_bc : 0x22201E); gfx_circle(cx, cy, r * 0.70, 1, 1);
   ui_cola(0xFFFFFF, 0.08); gfx_circle(cx, cy, r * 0.70, 0, 1);
   ui_col(0x060606); kr_thick(cx + ca * r * 0.18, cy + sa * r * 0.18, cx + ca * r * 0.98, cy + sa * r * 0.98, 4.2 * sc);
-  ui_col(krv_bc ? 0xF4F0E6 : KRA); kr_thick(cx + ca * r * 0.22, cy + sa * r * 0.22, cx + ca * r * 0.95, cy + sa * r * 0.95, 2.5 * sc);
+  ui_col(krv_bc ? ( (krv_bc & 255) + ((krv_bc >> 8) & 255) + ((krv_bc >> 16) & 255) > 500 ? 0x17191B : 0xF4F0E6 ) : KRA); kr_thick(cx + ca * r * 0.22, cy + sa * r * 0.22, cx + ca * r * 0.95, cy + sa * r * 0.95, 2.5 * sc);
 );
 function kr_scap(cx, cy, r, a, cap) local(ca, sa, k, pc) (
   ca = sin(a); sa = -cos(a);
@@ -726,7 +726,7 @@ loop(4,
   // GAIN
   krv_gi = krv_i == 0 ? 22 : krv_i == 1 ? 24 : krv_i == 2 ? 27 : 30;
   kr_scale(krv_cx, krv_sy + 150, 26, 3, 14, "-15|0|+15", 5);
-  krv_bc = krv_ec ? 0xB8607C : 0;                        // G: pink gain caps; E: black
+  krv_bc = krv_ec ? ( krv_mx ? 0xF1E5CF : 0xB8607C ) : 0;   // G: pink gain caps (MATRIX: cream); E: black
   krv_a = kr_knob(krv_cx, krv_sy + 150, 26, krv_gi, -15, 15, 0); krv_bc = 0; kr_name(krv_cx, krv_sy + 196, krv_a, "GAIN", kr_db(slider(krv_gi)));
   krv_i += 1;
 );
