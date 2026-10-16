@@ -19,13 +19,14 @@ desc:GFX Multi Transat [multiband saturation]
 //          harmonics that grow as it is pushed, peaks softened, level-compensated (DRIVE changes the colour, not the
 //          level); MIX 0 - 100 % (parallel: the saturated band against the clean band, in phase).
 //   WIDTH  per band: 0 % = mono, 100 % = as it was, 200 % = wide (the side doubled, the level kept steady).
-//   STEREO / MONO  MONO folds the output to mono (both sides the same): the check for phase and image.
+//   VFD / MATRIX  the panel's look: VFD (dark green, light green, black) or MATRIX (battleship grey, elephant's
+//          breath print, mustard amber, as KRT81's MATRIX). The look only: the sound is the same.
 //   DRIFT  (0 - 100 %, 50 % = standard, 0 = none): "heat / bias" - each band warms with what it is fed (rising over
 //          a couple of seconds, cooling over about six): its bias leans further (more 2nd) and its drive edges up
 //          (to +1.5 dB), and each band's bias wanders slowly on its own. The panel's HEAT lamps show it.
 //   INPUT  -12 .. +12 dB, OUTPUT -12 .. +12 dB. The house output stage passes straight through (a mix tool: no clip).
 //   PRESETS  12 (Init + 11) plus Reset all to defaults. A preset sets the crossovers and the three bands; INPUT,
-//          OUTPUT, STEREO / MONO and DRIFT are left alone (Reset all restores them too).
+//          OUTPUT, VFD / MATRIX and DRIFT are left alone (Reset all restores them too).
 
 slider1:0<-12,12,0.1>-Input (dB)
 slider2:250<50,1000,1>-Low / mid crossover (Hz)
@@ -45,7 +46,7 @@ slider15:0<-15,15,0.1>-High sustain (dB)
 slider16:6<0,24,0.1>-High drive (dB)
 slider17:100<0,100,1>-High mix (%)
 slider18:100<0,200,1>-High width (%)
-slider19:0<0,1,1{Stereo,Mono}>-Mode
+slider19:0<0,1,1{VFD,Matrix}>-Look
 slider20:0<-12,12,0.1>-Output (dB)
 slider21:50<0,100,1>-Drift (%)
 
@@ -221,11 +222,10 @@ bL.bd_set(slider4, slider5, slider6, slider7 / 100, slider8 / 100, 0.06 + 0.04 *
 bM.bd_set(slider9, slider10, slider11, slider12 / 100, slider13 / 100, 0.06 + 0.04 * mt_dm * mt_vM);
 bH.bd_set(slider14, slider15, slider16, slider17 / 100, slider18 / 100, 0.05 + 0.04 * mt_dm * mt_vH);
 bL.bd_rest(); bM.bd_rest(); bH.bd_rest();
-mt_mono = slider19 >= 0.5;
 mt_outt = 10 ^ (min(max(slider20, -12), 12) / 20);
 mt_snap ? (
   bL.bdD = bL.tD; bL.bdM = bL.tM; bL.bdW = bL.tW; bM.bdD = bM.tD; bM.bdM = bM.tM; bM.bdW = bM.tW; bH.bdD = bH.tD; bH.bdM = bH.tM; bH.bdW = bH.tW;
-  mt_outs = mt_outt; mt_mns = mt_mono; mt_snap = 0;
+  mt_outs = mt_outt; mt_snap = 0;
 );
 // denormal housekeeping
 xL.xo_tidy(); xR.xo_tidy(); bL.bd_tidy(); bM.bd_tidy(); bH.bd_tidy();
@@ -248,9 +248,8 @@ bL.bd_run(xL.lo, xR.lo); bM.bd_run(xL.mi, xR.mi); bH.bd_run(xL.hi, xR.hi);
 mt_yl = bL.oL + bM.oL + bH.oL; mt_yr = bL.oR + bM.oR + bH.oR;
 mt_l0 = max(mt_l0, abs(bL.oL)); mt_l1 = max(mt_l1, abs(bL.oR)); mt_m0 = max(mt_m0, abs(bM.oL)); mt_m1 = max(mt_m1, abs(bM.oR));
 mt_h0 = max(mt_h0, abs(bH.oL)); mt_h1 = max(mt_h1, abs(bH.oR));
-// OUTPUT, STEREO / MONO (faded)
-mt_outs += (mt_outt - mt_outs) * mt_gs; mt_mns += (mt_mono - mt_mns) * mt_gs;
-mt_mns > 0.0005 ? ( mt_m = 0.5 * (mt_yl + mt_yr); mt_yl += mt_mns * (mt_m - mt_yl); mt_yr += mt_mns * (mt_m - mt_yr); );
+// OUTPUT
+mt_outs += (mt_outt - mt_outs) * mt_gs;
 mt_yl *= mt_outs; mt_yr *= mt_outs;
 mt_yl != mt_yl ? mt_yl = 0; mt_yr != mt_yr ? mt_yr = 0;
 ost_out(mt_yl, mt_yr);
@@ -266,17 +265,34 @@ ui_begin(1080, 430);
 // a BAND LEVEL window (LOW / MID / HIGH, L / R ladders and each band's transient bar). Design space 1080 x 430.
 // Knobs: drag (SHIFT = fine), wheel, double-click = default; the name shows the value while the knob is touched.
 // =====================================================================
-KRP = 0x1E3A27;                                           // dark green faceplate
-KRF = 0x0E1410;                                           // the sections: green-black
+krv_mx = slider19 >= 0.5;                                 // the look: VFD (0) or MATRIX (1)
+!krv_mx ? (                                               // VFD: dark green, light green, black
+  KRP = 0x1E3A27;                                         // dark green faceplate
+  KRF = 0x0E1410;                                         // the sections: green-black
+  KRI = 0xCDEBCB;                                         // print: pale green
+  KRA = 0x9EE6A0;                                         // light green: active, pointers
+  KRW = 0x050806;                                         // meter window
+  KRM = 0x4A524A;                                         // bracket steel
+  KRC = 0x9EE6A0;                                         // small knob caps: light green
+  KRPT = 0x0B2E16;                                        // their pointers: very dark green
+  KRCN = 0x9EE6A0; KRGH = 0x0F1A12;                       // meter cells: lit / unlit
+  KRAMB = 0xFFB347; KRRED = 0xE0442A;
+  KRKT = 0x0D1A10;                                        // the caption on a lit key
+) : (                                                     // MATRIX: battleship grey, elephant's breath, mustard amber
+  KRP = 0x222528;
+  KRF = ui_mix(KRP, 0x000000, 0.25);
+  KRI = 0xC7BEB3;
+  KRA = 0xD4A373;
+  KRW = ui_mix(KRP, 0x000000, 0.45);
+  KRM = 0x4A4E4A;
+  KRC = 0xD4A373;
+  KRPT = 0x17191B;
+  KRCN = 0x1E5631; KRGH = 0x2C302E;                       // forest-green cells on olive drab
+  KRAMB = 0xD4A373; KRRED = 0xBC3908;
+  KRKT = 0x17191B;
+);
 KRH = ui_mix(KRP, 0x000000, 0.35);                        // header strip
-KRI = 0xCDEBCB;                                           // print: pale green
 KRI2 = ui_mix(KRI, KRF, 0.40);
-KRA = 0x9EE6A0;                                           // light green: active, pointers
-KRW = 0x050806;                                           // meter window
-KRM = 0x4A524A;                                           // bracket steel
-KRC = 0x9EE6A0;                                           // small knob caps: light green
-KRPT = 0x0B2E16;                                          // their pointers: very dark green
-KRGH = 0x0F1A12; KRAMB = 0xFFB347; KRRED = 0xE0442A;
 
 gfx_setfont(6,  "Trebuchet MS", 27 * sc, 'b');            // title
 gfx_setfont(10, "Trebuchet MS", 13 * sc, 'b');            // scale numbers
@@ -302,7 +318,7 @@ function kr_key(x, y, w, h, lbl, on) local(hov, hit) (
   ui_col(0x050706); kr_r(x, y, w, h);
   on ? ui_col(KRA) : ui_col(hov ? ui_mix(KRF, 0xFFFFFF, 0.08) : ui_mix(KRF, KRP, 0.5)); kr_r(x + 1, y + 1, w - 2, h - 2);
   on ? ( ui_cola(KRA, 0.25); kr_r(x - 2, y - 2, w + 4, h + 4); ui_cola(0xFFFFFF, 0.3); kr_r(x + 1, y + 1, w - 2, 1); );
-  on ? ui_col(0x0D1A10) : ui_cola(KRI, 0.85);
+  on ? ui_col(KRKT) : ui_cola(KRI, 0.85);
   gfx_setfont(12); kr_ctxt(x + w * 0.5, y + h * 0.5 + 0.5, lbl);
   hit;
 );
@@ -403,7 +419,7 @@ function kr_small(cx, cy, r, idx, lo, hi, def, name, val) local(i, t, act) (
 );
 // ladder cells
 function kr_cell(x, y, w, h, lit, zone) local(c) (
-  c = zone == 2 ? KRRED : zone == 1 ? KRAMB : KRA;
+  c = zone == 2 ? KRRED : zone == 1 ? KRAMB : KRCN;
   lit ? ( ui_cola(c, 0.16); kr_r(x - 0.5, y - 1, w + 1, h + 2); ui_col(c); kr_r(x, y, w, h); ui_cola(0xFFFFFF, 0.22); kr_r(x, y, w, 1.5); )
       : ( ui_col(KRGH); kr_r(x, y, w, h); ui_cola(0x000000, 0.25); kr_r(x, y + h - 1, w, 1); );
 );
@@ -450,15 +466,15 @@ ui_cola(0xFFFFFF, 0.07); kr_r(12, 416.5, 1056, 1.5); kr_r(1066.5, 12, 1.5, 406);
 ui_col(KRH); kr_r(13.5, 13.5, 1053, 50.5);
 ui_col(KRA); kr_r(13.5, 64, 1053, 2);
 ui_col(KRA); gfx_circle(45 * sc, 39 * sc, 16 * sc, 1, 1);
-gfx_setfont(4); ui_col(0x0D1A10); ui_text(45 * sc, 33.5 * sc, "GFX");
+gfx_setfont(4); ui_col(KRKT); ui_text(45 * sc, 33.5 * sc, "GFX");
 gfx_setfont(6); ui_col(KRI); kr_txt(72, 24, "MULTI TRANSAT"); gfx_measurestr("MULTI TRANSAT", krv_tw, krv_th);
 krv_tx = 72 + krv_tw / sc + 14;
 gfx_setfont(11); ui_col(KRI2); kr_txt(krv_tx, 25, "3-BAND SATURATION"); kr_txt(krv_tx, 40, "TRANSIENTS · WIDTH");
 pk_pextra = "Reset all to defaults";
 k_ = pk_preset(470 * sc, 22 * sc, 300 * sc, 34 * sc, pr_cur, #mt_pm);
 k_ > 0 ? load_preset(k_);
-kr_key(786, 25, 72, 28, "STEREO", slider19 < 0.5) ? ( slider19 = 0; ui_auto(19); );
-kr_key(862, 25, 60, 28, "MONO", slider19 >= 0.5) ? ( slider19 = 1; ui_auto(19); );
+kr_key(796, 25, 56, 28, "VFD", krv_mx == 0) ? ( slider19 = 0; ui_auto(19); );
+kr_key(856, 25, 66, 28, "MATRIX", krv_mx == 1) ? ( slider19 = 1; ui_auto(19); );
 ui_size_picker(1000 * sc, 30 * sc);
 
 // =====================================================================
@@ -479,9 +495,9 @@ krv_l0 = kr_fall(krv_l0, mta_l0); krv_l1 = kr_fall(krv_l1, mta_l1); krv_m0 = kr_
 krv_m1 = kr_fall(krv_m1, mta_m1); krv_h0 = kr_fall(krv_h0, mta_h0); krv_h1 = kr_fall(krv_h1, mta_h1);
 mta_l0 = mta_l1 = mta_m0 = mta_m1 = mta_h0 = mta_h1 = 0;
 function kr_tbar(x, y, g) local(n, w) (                   // a transient bar: -15 .. +15 dB about the centre
-  ui_col(0x2A3A2C); kr_r(x, y, 92, 14); ui_col(KRW); kr_r(x + 1, y + 1, 90, 12);
+  ui_col(ui_mix(KRI, KRW, 0.8)); kr_r(x, y, 92, 14); ui_col(KRW); kr_r(x + 1, y + 1, 90, 12);
   n = min(max(g / 15, -1), 1); w = 42 * n;
-  ui_col(n >= 0 ? KRA : KRAMB);
+  ui_col(n >= 0 ? (krv_mx ? 0x3E8C55 : KRA) : (krv_mx ? KRRED : KRAMB));
   abs(w) > 0.5 ? ( n >= 0 ? kr_r(x + 46, y + 4, w, 6) : kr_r(x + 46 + w, y + 4, -w, 6); );
   ui_col(KRI2); kr_r(x + 45.5, y + 2, 1, 10);
 );
