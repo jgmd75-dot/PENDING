@@ -2,8 +2,8 @@
 import os; S=os.environ.get('GFX_KIT_DIR', os.path.dirname(os.path.abspath(__file__)) + '/')
 KIT=open(S+'ch34_kit2.txt').read()
 
-def sliders_common():
-    return """slider1:3<0,5,1{1/4,1/8,1/8T,1/16,1/16T,1/32}>-Rate
+def sliders_common(rate=3):
+    return "slider1:" + str(rate) + """<0,5,1{1/4,1/8,1/8T,1/16,1/16T,1/32}>-Rate
 slider2:0<0,75,1>-Swing (%)
 slider3:15<0,100,1>-Humanize (%)
 slider4:5<0,10,0.1>-Accent

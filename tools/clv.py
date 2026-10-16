@@ -10,7 +10,8 @@ HDR = """desc:GFX CLV34 [clave, woodblocks + agogo]
 //
 //   CLAVE      two hardwood sticks: a bright, short, pitched knock (TUNE 1.5 .. 3.5 kHz) with the bar's upper modes
 //              (x 2.78, 7.38: a free hardwood bar). DECAY. LAST +1/16 moves the pattern's last hit a 16th later (the
-//              traditional push on the son and rumba claves); off moves it back. The clave presets run two bars of 16ths.
+//              traditional push on the son and rumba claves); off moves it back. The clave presets run 32 steps
+//              at 1/32 (the clave's two bars in the time the old 16 steps took, on a grid twice as fine).
 //   WOODBLOCK  a hollow block, high and low (the low about a fifth down): its cavity's closely spaced modes (x 1.78,
 //              2.38, 3.38) and the knock of the stick. TUNE 500 .. 1500 Hz (the high block), DECAY.
 //   AGOGO      two iron cone bells, high and low (a fourth apart): widely spread inharmonic modes (x 4.08, 6.67 and
@@ -31,7 +32,7 @@ HDR = """desc:GFX CLV34 [clave, woodblocks + agogo]
 //              DRIFT and the look are left alone (Reset all restores them too).
 
 """
-sl = sliders_common()
+sl = sliders_common(5)
 ls, nxt = sliders_lanes([("Clave",0,32),("Wood hi",-30),("Wood lo",-40),("Agogo hi",30),("Agogo lo",40)])
 sl += ls + """slider24:2400<1500,3500,1>-Clave tune (Hz)
 slider25:0.5<0.15,0.95,0.01>-Clave decay
@@ -106,10 +107,10 @@ function clv_set(ct, cd, wt, wd, at, ad, hd) ( !pc_po ? (
   slider31 = 0; cv_lap = 0; slider10 = slider13 = slider16 = slider19 = slider22 = 0; slider11 = 0; slider14 = -30; slider17 = -40; slider20 = 30; slider23 = 40; ); );
 function clv_none() ( pc_pat(1, "................"); pc_pat(2, "................"); pc_pat(3, "................"); pc_pat(4, "................"); );
 function load_preset(p) local(i) (
-  p == 1 || p == 13 ? ( pc_seq(3, 0, 15, 5); clv_set(2400, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.....X.......X...X......."); clv_none(); ) :
-  p == 2  ? ( pc_seq(3, 0, 15, 5); clv_set(2400, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "....X...X.......X.....X.....X..."); clv_none(); ) :
-  p == 3  ? ( pc_seq(3, 0, 15, 5); clv_set(2300, 0.55, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.......X.....X...X......."); clv_none(); ) :
-  p == 4  ? ( pc_seq(3, 0, 10, 4); clv_set(2200, 0.45, 950, 0.45, 950, 0.16, 5); pc_pat(0, "X.....X.....X.......X.....X....."); clv_none(); ) :
+  p == 1 || p == 13 ? ( pc_seq(5, 0, 15, 5); clv_set(2400, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.....X.......X...X......."); clv_none(); ) :
+  p == 2  ? ( pc_seq(5, 0, 15, 5); clv_set(2400, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "....X...X.......X.....X.....X..."); clv_none(); ) :
+  p == 3  ? ( pc_seq(5, 0, 15, 5); clv_set(2300, 0.55, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.......X.....X...X......."); clv_none(); ) :
+  p == 4  ? ( pc_seq(5, 0, 10, 4); clv_set(2200, 0.45, 950, 0.45, 950, 0.16, 5); pc_pat(0, "X.....X.....X.......X.....X....."); clv_none(); ) :
   p == 5  ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 1000, 0.45, 950, 0.16, 7); pc_pat(0, "................"); clv_none();
               pc_pat(1, "x.x.x.x.x.x.x.x."); pc_pat(2, "X.......X......."); ) :
   p == 6  ? ( pc_seq(3, 5, 20, 6); clv_set(2400, 0.5, 950, 0.45, 900, 0.17, 6); pc_pat(0, "................"); clv_none();
@@ -120,11 +121,11 @@ function load_preset(p) local(i) (
               pc_pat(1, "X..x..X.X..x..X."); pc_pat(2, "...x.......x...."); ) :
   p == 9  ? ( pc_seq(3, 0, 20, 5); clv_set(2400, 0.5, 800, 0.7, 950, 0.16, 4); pc_pat(0, "................"); clv_none();
               pc_pat(1, "X...x.x...X.x..."); pc_pat(2, "..x...X.x...x.X."); ) :
-  p == 10 ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.....X.......X...X......."); clv_none();
+  p == 10 ? ( pc_seq(5, 0, 15, 6); clv_set(2400, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.....X.......X...X......."); clv_none();
               pc_pat(3, "X...X...X...X.X.X...X...X...X.X."); pc_pat(4, "..X...X...X.......X...X...X....."); ) :
-  p == 11 ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.....X.......X...X......."); clv_none();
+  p == 11 ? ( pc_seq(5, 0, 15, 6); clv_set(2400, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.....X.......X...X......."); clv_none();
               pc_pat(1, "x...x...x...X."); pc_pat(3, "X...x...x...X...x...x..."); ) :
-  p == 12 ? ( pc_seq(3, 8, 25, 7); clv_set(2500, 0.5, 1000, 0.45, 950, 0.16, 8); pc_pat(0, "....X...X.......X.....X.....X..."); clv_none();
+  p == 12 ? ( pc_seq(5, 0, 25, 7); clv_set(2500, 0.5, 1000, 0.45, 950, 0.16, 8); pc_pat(0, "....X...X.......X.....X.....X..."); clv_none();
               pc_pat(1, "x...x.x.x...x.x.x...x.x.x...x.x."); pc_pat(2, "X...............X..............."); pc_pat(3, "X...X.....X...X...X.....X...X..."); pc_pat(4, "..X.....X.......X...X.....X....."); );
   p == 13 && !pc_po ? ( slider5 = 0; slider6 = 0; slider7 = 50; slider8 = 0; );
   !pc_po ? ( i = 1; loop(31, ui_auto(i); i += 1; ); pr_cur = p == 13 ? 1 : p; );
