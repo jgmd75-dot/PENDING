@@ -9,6 +9,7 @@ folder, as usual.
   TRDI            gfx-trdi.jsfx            Utilities       transformer DI
   ALIGN           gfx-align.jsfx           Utilities       phase / time alignment
   CHECK           gfx-check.jsfx           Utilities       mix-translation monitor controller
+  BED34           gfx-bed34.jsfx           Amps & drive    practice amps (3 models x 3 speakers) + broken speaker
   FYRE            gfx-fyre.jsfx            Amps & drive    boost / treble booster / fuzz rack
   Multi Transat   gfx-multi-transat.jsfx   Mastering       3-band saturation, transients, width
   CH34            gfx-ch34.jsfx            Dynamics        preamp + drive / parametric EQ / VCA comp strip, EQ-comp swap
@@ -23,7 +24,7 @@ Ready to release together:
   Dynamics      CH34 + SUP34 + GLU34  -> 15 + 3 = 18
   Mastering     Multi Transat + BUS34 + COM34 -> 12 + 3 = 15
 Waiting:
-  Amps & drive  FYRE + two more drives -> 18 + 3 = 21
+  Amps & drive  FYRE + BED34 + one more drive -> 18 + 3 = 21
   Modulation    BOB34 + two more modulation units -> 21 + 3 = 24
 
 Manuals/   manual pages, one-page sections and images (TRDI, FYRE, Multi Transat so far)
