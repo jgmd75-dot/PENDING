@@ -1,17 +1,5 @@
 What to put back when these are released (copied out when they were pulled back, Oct 2026):
 
-MANUAL INDEX (TRDI), in its category list:
-<a href="gfx-trdi.html">TRDI<span>A passive transformer DI: a 1:1 nickel-iron core with soft low-end saturation.</span></a>
-
-README line (TRDI):
-  TRDI            gfx-trdi.jsfx
-
-WEBSITE CARD (TRDI), in index.html's P list:
-  ["TRDI", "gfx-trdi", "util", "A passive transformer DI with a 1:1 nickel-iron core: flat from 20 Hz to 20 kHz, and soft magnetic saturation that lands on the lows first when you push it. Input load, ground lift, RF filter, polarity and the box's 1 dB insertion loss.", ["Ni-Fe core", "level-compensated drive", "10 presets"]],
-
-GLANCE ROW (TRDI), glance/utilities.html:
-<tr><td class="n"><a href="../img/gfx-trdi.webp"><img src="../img/gfx-trdi.webp" alt="TRDI" loading="lazy"><b>TRDI</b><span>Panel</span></a><div class="acts"><a href="../manual/gfx-trdi.pdf" target="_blank" rel="noopener">Manual PDF</a><a class="js-dl" href="../files/gfx-trdi.jsfx" data-file="gfx-trdi.jsfx" title="Needs the GFX system files in the same folder">Download</a><a class="sys" href="../files/GFX-system-files.zip" title="Download once - works for every plug-in">+ System files</a></div></td><td>Passive transformer DI boxes</td><td><ul><li>1:1 nickel-iron core, 20 Hz - 20 kHz</li><li>Soft low-end saturation, level-compensated</li><li>Load, lift, RF filter, polarity</li></ul></td><td>DI bass, kick and low synths with weight</td></tr>
-
 (Added Oct 2026: KBH77.)
 
 MANUAL INDEX (KBH77), in its category list:
