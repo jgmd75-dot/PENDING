@@ -19,8 +19,7 @@ desc:GFX CH34 [channel strip]
 //           WIDTH (Q) 0.25 .. 4 and GAIN -20 .. +20 dB sweep. Every change glides (80 ms): no zipper, no click.
 //   COMP    a feed-forward VCA compressor with a true-RMS detector (linked stereo): THRESHOLD -40 .. 0 dBFS, RATIO
 //           1:1 .. 20:1 and INF, ATTACK 0.1 .. 100 ms, RELEASE 20 ms .. 2 s, SOFT KNEE (10 dB), AUTO (program-dependent
-//           attack and release; it overrides ATTACK and RELEASE), MAKEUP -20 .. +20 dB, PEAK LIMIT (a fast peak limiter
-//           after the makeup, its ceiling -20 .. 0 dBFS, on its own key), and SC HPF: a 12 dB/oct high-pass on the
+//           attack and release; it overrides ATTACK and RELEASE), MAKEUP -20 .. +20 dB, and SC HPF: a 12 dB/oct high-pass on the
 //           detector (OFF, 20 .. 300 Hz) that rises with DRIVE, an octave for every 12 dB above 0 (x4 at +24 dB), so
 //           the harder the strip is driven, the less the lows pump the compressor.
 //   ORDER   EQ > COMP or COMP > EQ. A change runs the new chain alongside the old one for 40 ms, then crossfades into it
@@ -28,7 +27,8 @@ desc:GFX CH34 [channel strip]
 //   DRIFT   (0 - 100 %, 50 % = standard, 0 = none): "voltage, drive, bias" - the supply sags with what the preamp
 //           draws and wanders slowly (the preamp's headroom breathes), the drive wanders a little, and the bias wanders:
 //           the preamp's asymmetry and the compressor VCA's control voltage (its threshold, by a few tenths of a dB).
-//   OUTPUT -12 .. +12 dB. The house output stage passes straight through (a mix tool: no clip).
+//   OUTPUT -12 .. +12 dB, then PEAK LIMIT: a fast peak limiter, the last thing in the strip (its ceiling -20 .. 0 dBFS,
+//           on its LIMIT key; instant attack, 60 ms release, then a hard ceiling on the sample peaks). The house output stage passes straight through (a mix tool: no clip).
 //   VFD / MATRIX  the panel's look (VFD charcoal and orange; MATRIX battleship grey with cream). The look only.
 //   PRESETS 12 (Init + 11) plus Reset all to defaults. A preset sets the modules (keys, knobs) and the order; DRIVE,
 //           OUTPUT, DRIFT and the look are left alone (Reset all restores them too).
@@ -167,8 +167,8 @@ function eq_tidy() (
 );
 
 // ---- COMP: SC HPF, true-RMS detector (linked), static curve (soft or hard knee), attack / release on the gain, VCA,
-//      makeup, PEAK LIMIT ----
-function cp_run() instance(ms, gdb, fst, slw, pg, grm, z1L, z2L, z1R, z2R) local(x2, lv, ov, k, tgt, c, g, a, dl, dr) (
+//      makeup ----
+function cp_run() instance(ms, gdb, fst, slw, grm, z1L, z2L, z1R, z2R) local(x2, lv, ov, k, tgt, g, dl, dr) (
   dl = SCC[0] * cs_a + z1L; z1L = SCC[1] * cs_a - SCC[3] * dl + z2L; z2L = SCC[2] * cs_a - SCC[4] * dl;   // (always running:
   dr = SCC[0] * cs_b + z1R; z1R = SCC[1] * cs_b - SCC[3] * dr + z2R; z2R = SCC[2] * cs_b - SCC[4] * dr;   //  warm when switched)
   x2 = cp_scon ? 0.5 * (dl * dl + dr * dr) : 0.5 * (cs_a * cs_a + cs_b * cs_b);
@@ -190,15 +190,8 @@ function cp_run() instance(ms, gdb, fst, slw, pg, grm, z1L, z2L, z1R, z2R) local
   grm = min(grm, gdb);
   g = exp(0.115129255 * (gdb + cp_mk));                                // the VCA and the makeup
   cs_a *= g; cs_b *= g;
-  cp_pon ? (                                                           // PEAK LIMIT: instant attack, 60 ms release
-    a = max(abs(cs_a), abs(cs_b));
-    c = a > cp_ceil ? cp_ceil / a : 1;
-    pg = c < pg ? c : pg + (1 - pg) * cp_kpr;
-    cs_a *= pg; cs_b *= pg;
-    cs_a = max(-cp_ceil, min(cp_ceil, cs_a)); cs_b = max(-cp_ceil, min(cp_ceil, cs_b));   // (the last word on the sample peaks)
-  );
 );
-function cp_reset() instance(ms, gdb, fst, slw, pg, z1L, z2L, z1R, z2R) ( ms = 0; gdb = fst = slw = 0; pg = 1; z1L = z2L = z1R = z2R = 0; );
+function cp_reset() instance(ms, gdb, fst, slw, z1L, z2L, z1R, z2R) ( ms = 0; gdb = fst = slw = 0; z1L = z2L = z1R = z2R = 0; );
 function cp_tidy() instance(ms, z1L, z2L, z1R, z2R) ( ms = cs_tn(ms); z1L = cs_tn(z1L); z2L = cs_tn(z2L); z1R = cs_tn(z1R); z2R = cs_tn(z2R); );
 
 // ---------- one chain set: the three modules in the order o, each faded by its IN key ----------
@@ -260,6 +253,7 @@ in_init();
 dV.drift_init(0.8 + rand(0.4)); dD.drift_init(0.8 + rand(0.4)); dB.drift_init(0.8 + rand(0.4)); dC.drift_init(0.8 + rand(0.4));
 drift_macro(50);
 cs_schp(20);
+cs_pg = 1;
 sA.set_reset(); sB.set_reset();
 cs_cur = 0; cs_oCur = cs_oNew = slider2 >= 0.5; cs_xf = 0;
 cs_gP = slider3 >= 0.5; cs_gE = slider4 >= 0.5; cs_gC = slider14 >= 0.5;
@@ -359,6 +353,14 @@ cs_xf > 0 ? (
 // the supply sags with what the preamp draws (the level into it)
 cs_d = max(abs(cs_xl), abs(cs_xr)) * 0.18 * cs_gP; cs_env += (cs_d > cs_env ? cs_eat : cs_ert) * (min(cs_d, 1) - cs_env);
 cs_yl *= cs_outs; cs_yr *= cs_outs;
+// PEAK LIMIT (the output section, last in the strip): instant attack, 60 ms release, then the hard ceiling
+cp_pon ? (
+  cs_pa = max(abs(cs_yl), abs(cs_yr));
+  cs_pc = cs_pa > cp_ceil ? cp_ceil / cs_pa : 1;
+  cs_pg = cs_pc < cs_pg ? cs_pc : cs_pg + (1 - cs_pg) * cp_kpr;
+  cs_yl *= cs_pg; cs_yr *= cs_pg;
+  cs_yl = max(-cp_ceil, min(cp_ceil, cs_yl)); cs_yr = max(-cp_ceil, min(cp_ceil, cs_yr));
+) : cs_pg = 1;
 cs_yl != cs_yl ? cs_yl = 0; cs_yr != cs_yr ? cs_yr = 0;
 ost_out(cs_yl, cs_yr);
 spl0 = max(-4, min(4, ost_l));
@@ -540,14 +542,14 @@ function kr_hz(f) ( f >= 1000 ? sprintf(#krh, "%g kHz", f / 1000) : sprintf(#krh
 function kr_module(m, s) local(x, w, y, inn, a, c, base, cx, cy, f, r) (
   w = 345; x = 178 + s * 351; y = 72;
   kr_sect(x, y, w, 338, m == 1 ? "EQ" : "COMP");
-  gfx_setfont(13); ui_col(KRI2); kr_txt(x + 9, y + 22, m == 1 ? "3-BAND PARAMETRIC" : "VCA COMPRESSOR / LIMITER");
+  gfx_setfont(13); ui_col(KRI2); kr_txt(x + 9, y + 22, m == 1 ? "3-BAND PARAMETRIC" : "VCA COMPRESSOR");
   inn = m == 1 ? 4 : 14;
   kr_key(x + w - 62, y + 8, 52, 24, "IN", slider(inn) >= 0.5) ? kr_tog(inn);
   m == 1 ? (
     // rows FREQ / WIDTH / GAIN; columns LOW / MID / HIGH; each knob's setting always shown under it
     gfx_setfont(11); ui_col(KRI2);
     kr_txt(x + 14, y + 104, "FREQ"); kr_txt(x + 14, y + 194, "WIDTH"); kr_txt(x + 14, y + 284, "GAIN");
-    f = 0; r = 19;
+    f = 0; r = 23;
     loop(3,
       cx = x + 128 + f * 88; base = f == 0 ? 5 : f == 1 ? 8 : 11;
       c = f == 0 ? KCLO : f == 1 ? KCMI : KCHI;
@@ -579,9 +581,7 @@ function kr_module(m, s) local(x, w, y, inn, a, c, base, cx, cy, f, r) (
     sprintf(#krl, "%d ms", floor(slider18 + 0.5)); kr_small(x + 290, y + 284, 19, 18, 20, 2000, 200, 11, "RELEASE", #krl);
     krv_lg = 0;
     slider19 >= 0.5 ? ( ui_cola(KRF, 0.65); kr_r(x + 250, y + 162, 84, 160); gfx_setfont(13); ui_col(KRA); kr_ctxt(x + 290, y + 244, "AUTO"); );
-    kr_small(x + 50, y + 284, 17, 21, -20, 20, 0, 11, "MAKEUP", kr_db(slider21));
-    kr_small(x + 122, y + 284, 17, 22, -20, 0, -1, 11, "PEAK", kr_db(slider22));
-    kr_key(x + 160, y + 272, 60, 24, "LIMIT", slider23 >= 0.5) ? kr_tog(23);
+    kr_small(x + 110, y + 284, 23, 21, -20, 20, 0, 11, "MAKEUP", kr_db(slider21));
   );
 );
 
@@ -626,9 +626,11 @@ krv_o = slider2 >= 0.5;
 kr_module(krv_o ? 2 : 1, 0); kr_module(krv_o ? 1 : 2, 1);
 
 kr_sect(880, 72, 96, 338, "OUTPUT");
-kr_scale(928, 210, 26, 3, 15, "-12|0|+12", 4);
-krv_a = kr_knob(928, 210, 26, 25, -12, 12, 0); kr_name(928, 262, krv_a, "LEVEL", kr_db(slider25));
-sprintf(#krv, "%d%%", floor(slider26 + 0.5)); kr_small(928, 350, 17, 26, 0, 100, 50, 11, "DRIFT", #krv);
+kr_scale(928, 150, 26, 3, 15, "-12|0|+12", 4);
+krv_a = kr_knob(928, 150, 26, 25, -12, 12, 0); kr_name(928, 202, krv_a, "LEVEL", kr_db(slider25));
+kr_small(928, 250, 17, 22, -20, 0, -1, 11, "PEAK", kr_db(slider22));
+kr_key(898, 298, 60, 24, "LIMIT", slider23 >= 0.5) ? kr_tog(23);
+sprintf(#krv, "%d%%", floor(slider26 + 0.5)); kr_small(928, 360, 17, 26, 0, 100, 50, 11, "DRIFT", #krv);
 
 kr_sect(982, 72, 76, 338, "METERS");
 kr_window(988, 96, 64, 274);
