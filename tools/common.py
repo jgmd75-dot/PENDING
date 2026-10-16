@@ -15,8 +15,9 @@ slider8:0<0,1,1{VFD,Matrix}>-Look
 
 def sliders_lanes(lanes):
     out=[]; i=9
-    for nm,pan in lanes:
-        out.append(f"slider{i}:16<1,32,1>-{nm} length (steps)"); out.append(f"slider{i+1}:0<-24,6,0.1>-{nm} level (dB)"); out.append(f"slider{i+2}:{pan}<-100,100,1>-{nm} pan")
+    for ln in lanes:
+        nm,pan=ln[0],ln[1]; n=ln[2] if len(ln)>2 else 16
+        out.append(f"slider{i}:{n}<1,32,1>-{nm} length (steps)"); out.append(f"slider{i+1}:0<-24,6,0.1>-{nm} level (dB)"); out.append(f"slider{i+2}:{pan}<-100,100,1>-{nm} pan")
         i+=3
     return "\n".join(out)+"\n", i
 
@@ -284,7 +285,7 @@ pk_end();
 ui_end();
 """
 
-def build(fn, header, sliders, ins_code, sets_code, gfxtxt):
+def build(fn, header, sliders, ins_code, sets_code, gfxtxt, ser_extra=""):
     txt = header + sliders + """
 in_pin:left input
 in_pin:right input
@@ -303,7 +304,7 @@ import gfx-clip.jsfx-inc
 file_var(0, ui_sz);
 file_var(0, pr_cur);
 file_mem(0, STP, 160);
-""" + BLOCK_COMMON + SAMPLE_COMMON.replace("pc_si += 1;","pc_si += 1;") + gfxtxt
+""" + ser_extra + BLOCK_COMMON + SAMPLE_COMMON.replace("pc_si += 1;","pc_si += 1;") + gfxtxt
     # reset the sample index each block
     txt = txt.replace("pc_mq = 0; pc_mi = 0;","pc_mq = 0; pc_mi = 0; pc_si = 0;")
     open(fn,'w').write(txt)

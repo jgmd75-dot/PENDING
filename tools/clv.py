@@ -9,7 +9,8 @@ HDR = """desc:GFX CLV34 [clave, woodblocks + agogo]
 // tuned to its material, with a step sequencer synced to REAPER's transport.
 //
 //   CLAVE      two hardwood sticks: a bright, short, pitched knock (TUNE 1.5 .. 3.5 kHz) with the bar's upper modes
-//              (x 2.78, 7.38: a free hardwood bar). DECAY.
+//              (x 2.78, 7.38: a free hardwood bar). DECAY. LAST +1/16 moves the pattern's last hit a 16th later (the
+//              traditional push on the son and rumba claves); off moves it back. The clave presets run two bars of 16ths.
 //   WOODBLOCK  a hollow block, high and low (the low about a fifth down): its cavity's closely spaced modes (x 1.78,
 //              2.38, 3.38) and the knock of the stick. TUNE 500 .. 1500 Hz (the high block), DECAY.
 //   AGOGO      two iron cone bells, high and low (a fourth apart): widely spread inharmonic modes (x 4.08, 6.67 and
@@ -31,7 +32,7 @@ HDR = """desc:GFX CLV34 [clave, woodblocks + agogo]
 
 """
 sl = sliders_common()
-ls, nxt = sliders_lanes([("Clave",0),("Wood hi",-30),("Wood lo",-40),("Agogo hi",30),("Agogo lo",40)])
+ls, nxt = sliders_lanes([("Clave",0,32),("Wood hi",-30),("Wood lo",-40),("Agogo hi",30),("Agogo lo",40)])
 sl += ls + """slider24:2400<1500,3500,1>-Clave tune (Hz)
 slider25:0.5<0.15,0.95,0.01>-Clave decay
 slider26:950<500,1500,1>-Woodblock tune (Hz)
@@ -39,11 +40,13 @@ slider27:0.45<0.15,0.85,0.01>-Woodblock decay
 slider28:950<600,1600,1>-Agogo tune (Hz)
 slider29:0.35<0.15,0.6,0.01>-Agogo decay
 slider30:6<0,10,0.1>-Hardness
+slider31:0<0,1,1{Off,On}>-Clave last hit a 16th late
 """
 INS = r"""
 NL = 5;
 CVK = 4250; CVK[0] = 0.52; CVK[1] = 0.344; CVK[2] = 0.272; CVK[3] = 0.226; CVK[4] = 0.286;   // (each voice's output trim)
 #ui_man = "gfx-clv34";
+cv_lap = 0;                                           // (LATE LAST as applied to the pattern)
 XN = 4210; XD = 4240; XW = 4260; XP = 4270; XA = 4280; XH = 4290;   // per lane: the knock and its decay; the stick's pulse
 // =====================================================================
 // THE INSTRUMENTS - every voice a struck bank of resonators (modes 0-1 clave, 2-4 / 5-7 woodblocks, 8-11 / 12-15 agogo)
@@ -68,7 +71,15 @@ function ins_trig(k, v, a) local(f, d, m, h) (
   XW[k] = max(floor(h * srate), 2); XP[k] = 0; XA[k] = v * 2 / XW[k];
   XN[k] = v * (k == 1 || k == 2 ? 0.5 : k == 0 ? 0.25 : 0.12);                     // and its knock
 );
+// LATE LAST: the clave's last hit a 16th late (the traditional push on the son and rumba claves). It moves the hit in
+// the pattern itself, so the grid shows what plays; switching it off moves it back.
+function cv_shift(dir) local(n, i, l) (
+  n = min(max(floor(slider9 + 0.5), 1), 32); l = -1; i = 0; loop(n, STP[i] > 0 ? l = i; i += 1; );
+  dir > 0 ? ( l >= 0 && l + 1 < n && STP[l + 1] === 0 ? ( STP[l + 1] = STP[l]; STP[l] = 0; ); )
+          : ( l >= 1 && STP[l - 1] === 0 ? ( STP[l - 1] = STP[l]; STP[l] = 0; ); );
+);
 function ins_block() (
+  cv_lt = slider31 >= 0.5; cv_lt != cv_lap ? ( cv_shift(cv_lt ? 1 : -1); cv_lap = cv_lt; );
   cv_ct = min(max(slider24, 1500), 3500); cv_cd = min(max(slider25, 0.15), 0.95);
   cv_wt = min(max(slider26, 500), 1500); cv_wd = min(max(slider27, 0.15), 0.85);
   cv_at = min(max(slider28, 600), 1600); cv_ad = min(max(slider29, 0.15), 0.6);
@@ -92,13 +103,13 @@ SETS = r"""
 #pc_pm = "Init|Son Clave 2-3|Rumba Clave|Bossa Clave|Woodblock Tick|Agogo Samba|Afro Bell 12/8|Cha Cha|Temple Blocks|Clave and Bell|Polymeter|Batucada Lite";
 function clv_set(ct, cd, wt, wd, at, ad, hd) ( !pc_po ? (
   slider24 = ct; slider25 = cd; slider26 = wt; slider27 = wd; slider28 = at; slider29 = ad; slider30 = hd;
-  slider10 = slider13 = slider16 = slider19 = slider22 = 0; slider11 = 0; slider14 = -30; slider17 = -40; slider20 = 30; slider23 = 40; ); );
+  slider31 = 0; cv_lap = 0; slider10 = slider13 = slider16 = slider19 = slider22 = 0; slider11 = 0; slider14 = -30; slider17 = -40; slider20 = 30; slider23 = 40; ); );
 function clv_none() ( pc_pat(1, "................"); pc_pat(2, "................"); pc_pat(3, "................"); pc_pat(4, "................"); );
 function load_preset(p) local(i) (
-  p == 1 || p == 13 ? ( pc_seq(3, 0, 15, 5); clv_set(2400, 0.5, 950, 0.45, 950, 0.35, 6); pc_pat(0, "X..X..X...X.X..."); clv_none(); ) :
-  p == 2  ? ( pc_seq(3, 0, 15, 5); clv_set(2400, 0.5, 950, 0.45, 950, 0.35, 6); pc_pat(0, "..X.X...X..X..X."); clv_none(); ) :
-  p == 3  ? ( pc_seq(3, 0, 15, 5); clv_set(2300, 0.55, 950, 0.45, 950, 0.35, 6); pc_pat(0, "X..X...X..X.X..."); clv_none(); ) :
-  p == 4  ? ( pc_seq(3, 0, 10, 4); clv_set(2200, 0.45, 950, 0.45, 950, 0.35, 5); pc_pat(0, "X..X..X...X..X.."); clv_none(); ) :
+  p == 1 || p == 13 ? ( pc_seq(3, 0, 15, 5); clv_set(2400, 0.5, 950, 0.45, 950, 0.35, 6); pc_pat(0, "X.....X.....X.......X...X......."); clv_none(); ) :
+  p == 2  ? ( pc_seq(3, 0, 15, 5); clv_set(2400, 0.5, 950, 0.45, 950, 0.35, 6); pc_pat(0, "....X...X.......X.....X.....X..."); clv_none(); ) :
+  p == 3  ? ( pc_seq(3, 0, 15, 5); clv_set(2300, 0.55, 950, 0.45, 950, 0.35, 6); pc_pat(0, "X.....X.......X.....X...X......."); clv_none(); ) :
+  p == 4  ? ( pc_seq(3, 0, 10, 4); clv_set(2200, 0.45, 950, 0.45, 950, 0.35, 5); pc_pat(0, "X.....X.....X.......X.....X....."); clv_none(); ) :
   p == 5  ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 1000, 0.45, 950, 0.35, 7); pc_pat(0, "................"); clv_none();
               pc_pat(1, "x.x.x.x.x.x.x.x."); pc_pat(2, "X.......X......."); ) :
   p == 6  ? ( pc_seq(3, 5, 20, 6); clv_set(2400, 0.5, 950, 0.45, 900, 0.38, 6); pc_pat(0, "................"); clv_none();
@@ -109,18 +120,19 @@ function load_preset(p) local(i) (
               pc_pat(1, "X..x..X.X..x..X."); pc_pat(2, "...x.......x...."); ) :
   p == 9  ? ( pc_seq(3, 0, 20, 5); clv_set(2400, 0.5, 800, 0.7, 950, 0.35, 4); pc_pat(0, "................"); clv_none();
               pc_pat(1, "X...x.x...X.x..."); pc_pat(2, "..x...X.x...x.X."); ) :
-  p == 10 ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 950, 0.45, 950, 0.35, 6); pc_pat(0, "X..X..X...X.X..."); clv_none();
-              pc_pat(3, "X.X.X.XXX.X.X.XX"); pc_pat(4, ".X.X.X...X.X.X.."); ) :
-  p == 11 ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 950, 0.45, 950, 0.35, 6); pc_pat(0, "X..X..X...X.X..."); clv_none();
-              pc_pat(1, "x.x.x.X"); pc_pat(3, "X.x.x.X.x.x."); ) :
-  p == 12 ? ( pc_seq(3, 8, 25, 7); clv_set(2500, 0.5, 1000, 0.45, 950, 0.35, 8); pc_pat(0, "..X.X...X..X..X."); clv_none();
-              pc_pat(1, "x.xxx.xxx.xxx.xx"); pc_pat(2, "X.......X......."); pc_pat(3, "X.X..X.X.X..X.X."); pc_pat(4, ".X..X...X.X..X.."); );
+  p == 10 ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 950, 0.45, 950, 0.35, 6); pc_pat(0, "X.....X.....X.......X...X......."); clv_none();
+              pc_pat(3, "X...X...X...X.X.X...X...X...X.X."); pc_pat(4, "..X...X...X.......X...X...X....."); ) :
+  p == 11 ? ( pc_seq(3, 0, 15, 6); clv_set(2400, 0.5, 950, 0.45, 950, 0.35, 6); pc_pat(0, "X.....X.....X.......X...X......."); clv_none();
+              pc_pat(1, "x...x...x...X."); pc_pat(3, "X...x...x...X...x...x..."); ) :
+  p == 12 ? ( pc_seq(3, 8, 25, 7); clv_set(2500, 0.5, 1000, 0.45, 950, 0.35, 8); pc_pat(0, "....X...X.......X.....X.....X..."); clv_none();
+              pc_pat(1, "x...x.x.x...x.x.x...x.x.x...x.x."); pc_pat(2, "X...............X..............."); pc_pat(3, "X...X.....X...X...X.....X...X..."); pc_pat(4, "..X.....X.......X...X.....X....."); );
   p == 13 && !pc_po ? ( slider5 = 0; slider6 = 0; slider7 = 50; slider8 = 0; );
-  !pc_po ? ( i = 1; loop(30, ui_auto(i); i += 1; ); pr_cur = p == 13 ? 1 : p; );
+  !pc_po ? ( i = 1; loop(31, ui_auto(i); i += 1; ); pr_cur = p == 13 ? 1 : p; );
 );
 """ + INIT_TAIL_COMMON
 PANEL = r"""
 kr_sect(22, pv_y, 290, 190, "CLAVE");
+kr_key(206, pv_y + 8, 98, 20, "LAST +1/16", slider31 >= 0.5) ? kr_tog(31);
 sprintf(#pa, "%d Hz", floor(slider24 + 0.5)); pv_k(60, pv_ky, 24, 1500, 3500, 2400, 1, "TUNE", #pa);
 sprintf(#pb, "x %.2f", slider25); pv_k(116, pv_ky, 25, 0.15, 0.95, 0.5, 1, "DECAY", #pb);
 sprintf(#pc, "%+.1f dB", slider10); pv_k(172, pv_ky, 10, -24, 6, 0, 0, "LEVEL", #pc);
