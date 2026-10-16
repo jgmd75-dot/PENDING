@@ -1,15 +1,3 @@
 What to put back when these are released (copied out when they were pulled back, Oct 2026):
 
-(Added Oct 2026: KBH77.)
-
-MANUAL INDEX (KBH77), in its category list:
-<a href="gfx-kbh77.html">KBH77<span>A 1970s Danish broadcast channel: filter, presence EQ, compressor / expander with hold and gate, and a log-clip limiter.</span></a>
-
-README line (KBH77):
-  KBH77           gfx-kbh77.jsfx
-
-WEBSITE CARD (KBH77), in index.html's P list:
-  ["KBH77", "gfx-kbh77", "dyn", "A 1970s Danish broadcast channel in slim cassettes: an 18 dB/oct filter, a presence equaliser, a compressor / expander whose output stays constant at its reference level (GAIN lifts the quiet parts, RATIO pulls everything in), HOLD, a gate and a safety limiter with a logarithmic clipping circuit. Oven-heated drift, VFD / MATRIX looks.", ["constant-output comp / exp", "hold + gate", "log-clip limiter"]],
-
-GLANCE ROW (KBH77), glance/dynamics.html:
-<tr><td class="n"><a href="../img/gfx-kbh77.webp"><img src="../img/gfx-kbh77.webp" alt="KBH77" loading="lazy"><b>KBH77</b><span>Panel</span></a><div class="acts"><a href="../manual/gfx-kbh77.pdf" target="_blank" rel="noopener">Manual PDF</a><a class="js-dl" href="../files/gfx-kbh77.jsfx" data-file="gfx-kbh77.jsfx" title="Needs the GFX system files in the same folder">Download</a><a class="sys" href="../files/GFX-system-files.zip" title="Download once - works for every plug-in">+ System files</a></div></td><td>1970s Danish broadcast channel cassettes</td><td><ul><li>18 dB/oct filters and a presence EQ</li><li>Constant-output comp / exp, HOLD, gate</li><li>Log-clip limiter, oven drift, VFD / MATRIX</li></ul></td><td>Voice-over, dialogue and radio-ready vocals</td></tr>
+(Nothing waiting: every plug-in that was here has been released.)
