@@ -23,6 +23,8 @@ HDR = """desc:GFX BEL34 [cowbell + triangle]
 //   DRIFT      (0 - 100 %, 50 % = standard, 0 = none): tuning (a hair) and the player - the timing drifts a few ms
 //              behind the beat and back, and the strength breathes.
 //   VFD / MATRIX  the panel's look (VFD charcoal and brass; MATRIX battleship grey and cream). The look only.
+//   REVERB     on the whole mix: ROOM, SPRING (two tanks with the chirp) or PLATE; DECAY, TONE and AMOUNT (added
+//              to the dry). Switching type fades across without a click. Presets leave it alone; Reset all clears it.
 //   PRESETS    12 (Init + 11) plus Reset all to defaults. A preset sets the sounds, the patterns and the groove; MASTER,
 //              DRIFT and the look are left alone (Reset all restores them too).
 
@@ -110,7 +112,7 @@ function load_preset(p) local(i) (
   p == 10 ? ( pc_seq(1, 0, 15, 6); bel_set(600, 1.44, 130, 2, 5, 5, 0.20, 3); pc_pat(0, "X.x.X.x.X.x.X.x."); pc_pat(1, "..X...X...X...X."); ) :
   p == 11 ? ( pc_seq(1, 0, 15, 6); bel_set(620, 1.5, 130, 2, 5, 5, 0.15, 3); pc_pat(0, "X.x.x"); pc_pat(1, "X.x.x.x."); ) :
   p == 12 ? ( pc_seq(1, 0, 15, 6); bel_set(420, 1.6, 200, 0.5, 5, 5, 0.25, 3); pc_pat(0, "X.x.X.xxX.x.X.x."); pc_pat(1, "................"); );
-  p == 13 && !pc_po ? ( slider5 = 0; slider6 = 0; slider7 = 50; slider8 = 0; );
+  p == 13 && !pc_po ? ( slider5 = 0; slider6 = 0; slider7 = 50; slider8 = 0; rv_reset(); );
   !pc_po ? ( i = 1; loop(22, ui_auto(i); i += 1; ); pr_cur = p == 13 ? 1 : p; );
 );
 """ + INIT_TAIL_COMMON

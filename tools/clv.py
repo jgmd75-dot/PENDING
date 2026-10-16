@@ -30,7 +30,9 @@ HDR = """desc:GFX CLV34 [clave, woodblocks + agogo]
 //   DRIFT      (0 - 100 %, 50 % = standard, 0 = none): tuning (a hair) and the player - the timing drifts a few ms
 //              behind the beat and back, and the strength breathes.
 //   VFD / MATRIX  the panel's look (VFD charcoal and rosewood; MATRIX battleship grey and cream). The look only.
-//   PRESETS    12 (Init + 11) plus Reset all to defaults. A preset sets the sounds, the patterns and the groove; MASTER,
+//   REVERB     on the whole mix: ROOM, SPRING (two tanks with the chirp) or PLATE; DECAY, TONE and AMOUNT (added
+//              to the dry). Switching type fades across without a click. Presets leave it alone; Reset all clears it.
+//   PRESETS    18 (Init + 17) plus Reset all to defaults. A preset sets the sounds, the patterns and the groove; MASTER,
 //              DRIFT and the look are left alone (Reset all restores them too).
 
 """
@@ -114,13 +116,13 @@ function ins_sample() local(k, x, n) (
 """
 SETS = r"""
 // ---------- presets ----------
-#pc_pm = "Init|Son Clave 2-3|Rumba Clave|Bossa Clave|Woodblock Tick|Agogo Samba|Afro Bell 12/8|Cha Cha|Temple Blocks|Clave and Bell|Polymeter|Batucada Lite";
+#pc_pm = "Init|Son Clave 2-3|Rumba Clave|Bossa Clave|Woodblock Tick|Agogo Samba|Afro Bell 12/8|Cha Cha|Temple Blocks|Clave and Bell|Polymeter|Batucada Lite|Son Clave 2-3 (late)|Tresillo and Cinquillo|Gahu (Ghana)|Shiko (Nigeria)|Soukous (Congo)|Agbekor 12/8 (Ghana)";
 function clv_set(ct, cd, wt, wd, at, ad, hd) ( !pc_po ? (
   slider24 = ct; slider25 = cd; slider26 = wt; slider27 = wd; slider28 = at; slider29 = ad; slider30 = hd;
   slider31 = 0; cv_lap = 0; slider10 = slider13 = slider16 = slider19 = slider22 = 0; slider11 = 0; slider14 = -30; slider17 = -40; slider20 = 30; slider23 = 40; ); );
 function clv_none() ( pc_pat(1, "................"); pc_pat(2, "................"); pc_pat(3, "................"); pc_pat(4, "................"); );
 function load_preset(p) local(i) (
-  p == 1 || p == 13 ? ( pc_seq(5, 0, 15, 5); clv_set(1600, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.....X.......X...X......."); clv_none(); ) :
+  p == 1 || p == 19 ? ( pc_seq(5, 0, 15, 5); clv_set(1600, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.....X.......X...X......."); clv_none(); ) :
   p == 2  ? ( pc_seq(5, 0, 15, 5); clv_set(1600, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "....X...X.......X.....X.....X..."); clv_none(); ) :
   p == 3  ? ( pc_seq(5, 0, 15, 5); clv_set(1530, 0.55, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.......X.....X...X......."); clv_none(); ) :
   p == 4  ? ( pc_seq(5, 0, 10, 4); clv_set(1470, 0.45, 950, 0.45, 950, 0.16, 5); pc_pat(0, "X.....X.....X.......X.....X....."); clv_none(); ) :
@@ -139,9 +141,20 @@ function load_preset(p) local(i) (
   p == 11 ? ( pc_seq(5, 0, 15, 6); clv_set(1600, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.....X.......X...X......."); clv_none();
               pc_pat(1, "x...x...x...X."); pc_pat(3, "X...x...x...X...x...x..."); ) :
   p == 12 ? ( pc_seq(5, 0, 25, 7); clv_set(1670, 0.5, 1000, 0.45, 950, 0.16, 8); pc_pat(0, "....X...X.......X.....X.....X..."); clv_none();
-              pc_pat(1, "x...x.x.x...x.x.x...x.x.x...x.x."); pc_pat(2, "X...............X..............."); pc_pat(3, "X...X.....X...X...X.....X...X..."); pc_pat(4, "..X.....X.......X...X.....X....."); );
-  p == 13 && !pc_po ? ( slider5 = 0; slider6 = 0; slider7 = 50; slider8 = 0; );
-  !pc_po ? ( i = 1; loop(32, ui_auto(i); i += 1; ); pr_cur = p == 13 ? 1 : p; );
+              pc_pat(1, "x...x.x.x...x.x.x...x.x.x...x.x."); pc_pat(2, "X...............X..............."); pc_pat(3, "X...X.....X...X...X.....X...X..."); pc_pat(4, "..X.....X.......X...X.....X.....")) :
+  p == 13 ? ( pc_seq(5, 0, 15, 5); clv_set(1600, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "....X...X.......X.....X.......X."); clv_none(); ) :
+  p == 14 ? ( pc_seq(5, 0, 15, 5); clv_set(1600, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.....X...X.....X.....X..."); clv_none();
+              pc_pat(1, "X...x.x...x.x...X...x.x...x.x..."); pc_pat(2, "X.......X.......X.......X......."); ) :
+  p == 15 ? ( pc_seq(5, 0, 15, 6); clv_set(1600, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "................................"); clv_none();
+              pc_pat(3, "X.....X.....X.......X.......X..."); pc_pat(2, "X.......X.......X.......X......."); ) :
+  p == 16 ? ( pc_seq(5, 0, 15, 5); clv_set(1600, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.......X...X.......X...X......."); clv_none();
+              pc_pat(2, "X...............X..............."); ) :
+  p == 17 ? ( pc_seq(5, 0, 15, 6); clv_set(1600, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "X.....X.....X.......X.X........."); clv_none();
+              pc_pat(1, "....x.......x.......x.......x..."); ) :
+  p == 18 ? ( pc_seq(2, 0, 15, 6); clv_set(1600, 0.5, 950, 0.45, 950, 0.16, 6); pc_pat(0, "............"); clv_none();
+              pc_pat(3, "X.X.XX.X.X.X"); pc_pat(4, "X.....X....."); pc_pat(2, "x..x..x..x.."); pc_pat(1, "............"); ); 
+  p == 19 && !pc_po ? ( slider5 = 0; slider6 = 0; slider7 = 50; slider8 = 0; slider32 = 0; ui_auto(32); rv_reset(); );
+  !pc_po ? ( i = 1; loop(32, ui_auto(i); i += 1; ); pr_cur = p == 19 ? 1 : p; );
 );
 """ + INIT_TAIL_COMMON
 PANEL = r"""
