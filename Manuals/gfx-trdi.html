@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GFX TRDI - manual</title><meta name="description" content="A passive transformer DI with a 1:1 nickel-iron core: very wide bandwidth, and soft magnetic saturation that only shows on the lows when you push it.">
+<style>
+:root{--bg:#0e0f11;--panel:#1b1d21;--panel-2:#23262b;--line:#2f3238;--ink:#e9e7e2;--ink-2:#b4b2ad;--ink-3:#85837e;--accent:#e0603a;--accent-2:#e8b23a}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-2)}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+.top{position:sticky;top:0;z-index:5;background:rgba(14,15,17,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;height:56px}
+.badge{width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--panel);display:grid;place-items:center;font-weight:700;font-size:10px;flex:none}
+.top a.home{color:var(--ink);text-decoration:none;font-weight:700;letter-spacing:1px}
+.top nav{margin-left:auto;display:flex;gap:16px;font-size:14px}.top nav a{color:var(--ink-2);text-decoration:none}
+h1{font-size:clamp(28px,5vw,42px);margin:28px 0 4px;line-height:1.1}
+.cat{color:var(--ink-3);font-size:13px;letter-spacing:.6px;text-transform:uppercase;font-weight:700}
+.tagline{color:var(--ink-2);font-size:18px;margin:6px 0 18px}
+.shot{background:#0b0c0d;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:0 0 20px}
+.shot img{display:block;width:100%;height:auto}
+h2{font-size:22px;margin:34px 0 10px;padding-top:6px;border-top:1px solid var(--line)}
+h3{font-size:17px;margin:22px 0 8px;color:var(--accent-2)}
+p{margin:0 0 12px;color:var(--ink-2)}
+ul.when{margin:0 0 12px;padding-left:20px;color:var(--ink-2)}
+dl.ctl{margin:0;display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+dl.ctl dt,dl.ctl dd{margin:0;padding:10px 14px;border-top:1px solid var(--line)}
+dl.ctl dt:first-of-type,dl.ctl dd:first-of-type{border-top:0}
+dl.ctl dt{background:var(--panel-2);font-weight:700;font-size:14px;letter-spacing:.3px}
+dl.ctl dd{background:var(--panel);color:var(--ink-2);font-size:15px}
+ol.steps{color:var(--ink-2);padding-left:22px}ol.steps li{margin:0 0 6px}
+.tips li{color:var(--ink-2);margin:0 0 6px}
+.file{font:13px ui-monospace,Menlo,Consolas,monospace;color:var(--ink-3)}
+code{font:13px ui-monospace,Menlo,Consolas,monospace;background:var(--panel-2);border:1px solid var(--line);padding:1px 5px;border-radius:4px;color:var(--ink)}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:24px 0 40px;color:var(--ink-3);font-size:14px}
+.toc{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:10px;margin:10px 0 24px}
+.toc a{display:block;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;text-decoration:none;color:var(--ink)}
+.toc a span{display:block;color:var(--ink-3);font-size:13px}
+.manual + .manual{margin-top:60px}
+@media (max-width:600px){dl.ctl{grid-template-columns:1fr}dl.ctl dd{border-top:0;padding-top:2px}}
+@media print{body{background:#fff;color:#000}.top,footer{display:none}p,dl.ctl dd,ul.when,.tips li,ol.steps{color:#222}
+ dl.ctl dt{background:#eee}dl.ctl dd{background:#fff}dl.ctl,dl.ctl dt,dl.ctl dd,h2{border-color:#ccc}h3{color:#7a4a10}.manual{break-before:page}.manual:first-of-type{break-before:auto}a{color:#000}}
+</style></head><body>
+<header class="top"><div class="wrap"><span class="badge">GFX</span><a class="home" href="index.html">GFX</a>
+<nav><a href="index.html">All manuals</a><a href="all.html">One page</a><a href="https://www.gardenfx.uk/">Website</a></nav></div></header>
+<main class="wrap"><section class="manual" id="gfx-trdi">
+<div class="cat">Utilities</div><h1>TRDI</h1>
+<p class="tagline">A passive transformer DI with a 1:1 nickel-iron core: very wide bandwidth, and soft magnetic saturation that only shows on the lows when you push it.</p>
+<div class="shot"><img src="img/gfx-trdi.webp" alt="The TRDI panel on Init" loading="lazy"></div>
+<h2>Overview</h2><p>TRDI is a passive DI box in the spirit of the classic British bass-amp maker's transformer DI. Its heart is a 1:1 transformer with a high-permeability nickel-iron (Ni-Fe) core: flat from 20 Hz to 20 kHz within 0.5 dB, about 3 dB down at 14 Hz, with the gentle low-frequency phase shift of real iron. The sound is designed from scratch.</p><p>A transformer core saturates on flux, and flux follows the low frequencies: the lower and louder the note, the harder the core works. So TRDI stays clean on the mids and highs, and when you push it, the iron rounds off and thickens the lowest, loudest notes first, mostly with 3rd harmonic and a trace of 2nd. DRIVE sets how hard the core is worked; the level is compensated, so it changes the iron, not the loudness.</p><p>TRDI runs in linked stereo: two identical paths sharing every control. It is a passive box, so it has no DRIFT, and as a utility its output stage passes straight through (no clip).</p>
+<h3>Reach for it for</h3><ul class="when"><li>A DI'd bass, especially a 5-string or a drop tuning, that needs weight without mud</li><li>Kick drums and low synths that want a little iron on the bottom</li><li>Keys and line sources through a wide, clean transformer</li><li>Gentle low-end glue on a bus</li></ul>
+<h2>Controls</h2><h3>The header</h3><dl class="ctl"><dt>PRESETS</dt><dd>Opens the full preset list, with Reset all to defaults at the end.</dd><dt>◄ / ►</dt><dd>Step to the previous or next preset (wrapping round).</dd><dt>Preset display</dt><dd>Shows the preset name. Click it for the preset list too.</dd><dt>S / M / L</dt><dd>Panel size: small, medium or large. The panel also scales to fit the plugin window. New instances open in medium, on Init.</dd><dt>?</dt><dd>Opens a pop-up with the design credit, the GFX website address and the address of this manual. Click anywhere to close it.</dd></dl>
+<p>Knobs: drag up or down (Shift for fine moves) or use the mouse wheel; double-click resets a knob to its default. The label under a knob turns into its value while you touch it. Every key fades in and out, so nothing clicks.</p>
+<h3>INPUT</h3><dl class="ctl"><dt>LOAD</dt><dd>The input impedance a direct pickup sees: 1M (default, no loading), 220k (the top just softens: about -0.5 dB at 10 kHz) or 47k (a darker, vintage load: about -4 dB at 10 kHz). It only matters on a direct instrument.</dd><dt>DRIVE</dt><dd>-12 to +18 dB (0 dB): how hard the core is worked. At 0 dB a full-scale 40 Hz note just reaches the knee; at +18 dB the lows are properly ironed. The level is compensated.</dd></dl>
+<h3>CORE</h3><dl class="ctl"><dt>CORE lamp</dt><dd>Glows as the core is worked, from well below the knee to full past it.</dd><dt>FLUX</dt><dd>The core's flux against its knee (the mark). Past the knee the bar turns orange.</dd><dt>LOSS -1 dB</dt><dd>On by default: the transformer's nominal 1.0 dB insertion loss, as on the box. Off, TRDI plays at unity.</dd></dl>
+<div class="shot"><img src="img/gfx-trdi-push.webp" alt="The TRDI panel on Drop-Tuned Push, the core past its knee on a low bass note" loading="lazy"></div>
+<h3>SIGNAL</h3><dl class="ctl"><dt>LIFT</dt><dd>Ground lift: adds a DC-blocking pole at 10 Hz, so the very bottom tightens a touch.</dd><dt>RF</dt><dd>The RF-rejection filter: a 2-pole low-pass at 30 kHz. At 44.1 or 48 kHz it takes a whisper off the very top (about -0.15 dB more at 20 kHz).</dd><dt>Ø 180°</dt><dd>Polarity invert, faded through zero.</dd></dl>
+<h3>OUTPUT and the bottom strip</h3><dl class="ctl"><dt>OUTPUT</dt><dd>-12 to +12 dB (0 dB).</dd><dt>IN / OUT</dt><dd>The input and output meters.</dd></dl>
+<h2>Presets</h2><p>Ten presets, Init and nine more. A preset sets DRIVE, LOAD, LIFT, RF and LOSS; OUTPUT and polarity stay as they are.</p><dl class="ctl"><dt>Init</dt><dd>DRIVE 0 dB, 1M, LOSS on.</dd><dt>Passive Bass</dt><dd>220k load, DRIVE +3 dB: a passive bass straight in.</dd><dt>Hot 5-String</dt><dd>DRIVE +9 dB: the low B gets rounded.</dd><dt>Drop-Tuned Push</dt><dd>DRIVE +14 dB with LIFT: drop tunings worked hard.</dd><dt>Vintage Load</dt><dd>47k load, DRIVE +4 dB: darker and older.</dd><dt>Keys DI</dt><dd>DRIVE +2 dB with the RF filter: clean keys.</dd><dt>Clean Line</dt><dd>DRIVE -6 dB, LOSS off: the iron's bandwidth and phase only.</dd><dt>Bus Iron</dt><dd>DRIVE +6 dB, RF on, LOSS off: low-end glue on a bus.</dd><dt>Iron Kick</dt><dd>DRIVE +12 dB with LIFT: weight on a kick drum.</dd><dt>Synth Bass Weight</dt><dd>DRIVE +10 dB with RF.</dd><dt>Reset all to defaults</dt><dd>(Last in the list.) Init, with OUTPUT and polarity back to their defaults too.</dd></dl>
+<h2>Tips</h2><ul class="tips"><li>On bass, start at Init and raise DRIVE until the CORE lamp glows on the lowest notes only.</li><li>LOAD is for a direct instrument: on a recorded or line source leave it at 1M.</li><li>For iron without any loss of level, switch LOSS off.</li><li>TRDI is very light on CPU: use it on every bass and kick track you like.</li></ul>
+<p class="file">File: gfx-trdi.jsfx</p></section></main>
+<footer><div class="wrap">GFX (Garden FX) - free JSFX plug-ins for REAPER. Designed by JGWizrad. <a href="https://www.gardenfx.uk/">https://www.gardenfx.uk/</a> &copy; 2026 John Garden.</div></footer></body></html>

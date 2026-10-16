@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GFX Multi Transat - manual</title><meta name="description" content="A three-band analogue saturation unit in the spirit of a mid-70s British design, with a transient shaper and stereo width on every band.">
+<style>
+:root{--bg:#0e0f11;--panel:#1b1d21;--panel-2:#23262b;--line:#2f3238;--ink:#e9e7e2;--ink-2:#b4b2ad;--ink-3:#85837e;--accent:#e0603a;--accent-2:#e8b23a}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Trebuchet MS","Segoe UI",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-2)}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+.top{position:sticky;top:0;z-index:5;background:rgba(14,15,17,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;height:56px}
+.badge{width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--panel);display:grid;place-items:center;font-weight:700;font-size:10px;flex:none}
+.top a.home{color:var(--ink);text-decoration:none;font-weight:700;letter-spacing:1px}
+.top nav{margin-left:auto;display:flex;gap:16px;font-size:14px}.top nav a{color:var(--ink-2);text-decoration:none}
+h1{font-size:clamp(28px,5vw,42px);margin:28px 0 4px;line-height:1.1}
+.cat{color:var(--ink-3);font-size:13px;letter-spacing:.6px;text-transform:uppercase;font-weight:700}
+.tagline{color:var(--ink-2);font-size:18px;margin:6px 0 18px}
+.shot{background:#0b0c0d;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:0 0 20px}
+.shot img{display:block;width:100%;height:auto}
+h2{font-size:22px;margin:34px 0 10px;padding-top:6px;border-top:1px solid var(--line)}
+h3{font-size:17px;margin:22px 0 8px;color:var(--accent-2)}
+p{margin:0 0 12px;color:var(--ink-2)}
+ul.when{margin:0 0 12px;padding-left:20px;color:var(--ink-2)}
+dl.ctl{margin:0;display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+dl.ctl dt,dl.ctl dd{margin:0;padding:10px 14px;border-top:1px solid var(--line)}
+dl.ctl dt:first-of-type,dl.ctl dd:first-of-type{border-top:0}
+dl.ctl dt{background:var(--panel-2);font-weight:700;font-size:14px;letter-spacing:.3px}
+dl.ctl dd{background:var(--panel);color:var(--ink-2);font-size:15px}
+ol.steps{color:var(--ink-2);padding-left:22px}ol.steps li{margin:0 0 6px}
+.tips li{color:var(--ink-2);margin:0 0 6px}
+.file{font:13px ui-monospace,Menlo,Consolas,monospace;color:var(--ink-3)}
+code{font:13px ui-monospace,Menlo,Consolas,monospace;background:var(--panel-2);border:1px solid var(--line);padding:1px 5px;border-radius:4px;color:var(--ink)}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:24px 0 40px;color:var(--ink-3);font-size:14px}
+.toc{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:10px;margin:10px 0 24px}
+.toc a{display:block;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;text-decoration:none;color:var(--ink)}
+.toc a span{display:block;color:var(--ink-3);font-size:13px}
+.manual + .manual{margin-top:60px}
+@media (max-width:600px){dl.ctl{grid-template-columns:1fr}dl.ctl dd{border-top:0;padding-top:2px}}
+@media print{body{background:#fff;color:#000}.top,footer{display:none}p,dl.ctl dd,ul.when,.tips li,ol.steps{color:#222}
+ dl.ctl dt{background:#eee}dl.ctl dd{background:#fff}dl.ctl,dl.ctl dt,dl.ctl dd,h2{border-color:#ccc}h3{color:#7a4a10}.manual{break-before:page}.manual:first-of-type{break-before:auto}a{color:#000}}
+</style></head><body>
+<header class="top"><div class="wrap"><span class="badge">GFX</span><a class="home" href="index.html">GFX</a>
+<nav><a href="index.html">All manuals</a><a href="all.html">One page</a><a href="https://www.gardenfx.uk/">Website</a></nav></div></header>
+<main class="wrap"><section class="manual" id="gfx-multi-transat">
+<div class="cat">Mastering</div><h1>Multi Transat</h1>
+<p class="tagline">A three-band analogue saturation unit in the spirit of a mid-70s British design, with a transient shaper and stereo width on every band.</p>
+<div class="shot"><img src="img/gfx-multi-transat.webp" alt="The Multi Transat panel on Init" loading="lazy"></div>
+<h2>Overview</h2><p>Multi Transat splits the signal into LOW, MID and HIGH bands and gives each band the same three tools: a transient shaper, a warm discrete-transistor saturation and stereo width. The sound is designed from scratch.</p><p>The split is a Linkwitz-Riley crossover at 24 dB per octave, with the low band phase-aligned to the upper split, so the three bands sum back flat: with DRIVE at 0 the whole unit measures flat within about 0.05 dB. Each band's frequency range is shown under its name.</p><p>DRIVE is level-compensated, so it changes the colour rather than the level: warm 2nd and 3rd harmonics that grow as you push it, peaks softened. The transient shaper is level-independent, with its envelope times tuned per band (slower in the lows, faster in the highs). A mix tool, its output stage passes straight through (no clip).</p>
+<h3>Reach for it for</h3><ul class="when"><li>Analogue warmth on a mix bus or master, band by band</li><li>Punchier drums, or tamed snap, without a compressor</li><li>Mono lows and wider highs in one pass</li><li>Thickening a bass or a vocal in just the part of the spectrum that needs it</li></ul>
+<h2>Controls</h2><h3>The header</h3><dl class="ctl"><dt>PRESETS</dt><dd>Opens the full preset list, with Reset all to defaults at the end.</dd><dt>◄ / ►</dt><dd>Step to the previous or next preset (wrapping round).</dd><dt>Preset display</dt><dd>Shows the preset name. Click it for the preset list too.</dd><dt>S / M / L</dt><dd>Panel size: small, medium or large. The panel also scales to fit the plugin window. New instances open in medium, on Init.</dd><dt>?</dt><dd>Opens a pop-up with the design credit, the GFX website address and the address of this manual. Click anywhere to close it.</dd></dl>
+<p>Knobs: drag up or down (Shift for fine moves) or use the mouse wheel; double-click resets a knob to its default. The label under a knob turns into its value while you touch it.</p>
+<h3>INPUT</h3><dl class="ctl"><dt>STEREO / MONO</dt><dd>MONO folds the output to mono (both sides the same): the check for phase and image. It fades, so it doesn't click.</dd><dt>INPUT</dt><dd>-12 to +12 dB (0 dB): the level into the unit, and so into the saturation.</dd></dl>
+<h3>The crossovers</h3><dl class="ctl"><dt>LOW / MID</dt><dd>50 Hz - 1 kHz (250 Hz).</dd><dt>MID / HIGH</dt><dd>1 - 12 kHz (4 kHz). It never sits below 1.5 times the LOW / MID point.</dd></dl><p>Both glide as you turn them, so they don't zip.</p>
+<h3>Each band: LOW, MID, HIGH</h3><dl class="ctl"><dt>HEAT</dt><dd>A lamp that glows as the band warms up (see DRIFT).</dd><dt>The bar</dt><dd>The transient shaper's live gain, from -15 dB (amber, left) to +15 dB (green, right).</dd><dt>ATTACK</dt><dd>-15 to +15 dB (0): lifts or softens the start of each hit. It leaves the tails alone.</dd><dt>SUSTAIN</dt><dd>-15 to +15 dB (0): lifts or tucks the tail of each sound.</dd><dt>DRIVE</dt><dd>0 to 24 dB (6 dB): how hard the band is driven into the saturation, level-compensated. At 6 dB it adds a gentle warmth (under 0.5% at -12 dBFS), at 24 dB it is thick and dense.</dd><dt>MIX</dt><dd>0 - 100% (100%): the saturated band against the clean band, in parallel and in phase.</dd><dt>WIDTH</dt><dd>0 - 200% (100%): 0% is mono, 100% as it was, 200% wide (the side doubled, the level kept steady).</dd></dl>
+<div class="shot"><img src="img/gfx-multi-transat-drums.webp" alt="The Multi Transat panel on Punchy Drums" loading="lazy"></div>
+<h3>OUTPUT and the bottom strip</h3><dl class="ctl"><dt>OUTPUT</dt><dd>-12 to +12 dB (0 dB).</dd><dt>DRIFT</dt><dd>0 - 100% (50%, the standard amount; 0 = none): heat and bias. See DRIFT below.</dd><dt>IN / OUT</dt><dd>The input and output meters, with the STEREO / MONO state beside them.</dd></dl>
+<h2>DRIFT</h2><p>Heat and bias. Each band warms with what it is fed, rising over a couple of seconds and cooling over about six: as it warms, its bias leans further (more 2nd harmonic) and its drive edges up, by up to 1.5 dB. Each band's bias also wanders slowly on its own path. At 0 it all holds still.</p>
+<h2>Presets</h2><p>Twelve presets, Init and eleven more. A preset sets the crossovers and the three bands; INPUT, OUTPUT, STEREO / MONO and DRIFT stay as they are. Every preset plays within about 1.5 dB of Init.</p><dl class="ctl"><dt>Init</dt><dd>Every band at DRIVE 6 dB, MIX 100%, no transient shaping, normal width.</dd><dt>Gentle Warmth</dt><dd>A little more drive, mixed in parallel, the highs a touch wider.</dd><dt>Punchy Drums</dt><dd>ATTACK up in every band and SUSTAIN down in the lows and mids, with drive: tighter, harder hits.</dd><dt>Tame the Snap</dt><dd>ATTACK down, most in the highs: softer, rounder transients.</dd><dt>Wide Air</dt><dd>The highs wide (150%) with a little sustain and drive.</dd><dt>Mono Lows</dt><dd>The lows below 150 Hz in mono, the highs a touch wider.</dd><dt>Vocal Presence</dt><dd>Drive and attack in the mids and highs, the lows tucked.</dd><dt>Bass Glue</dt><dd>The lows below 120 Hz driven hard and in mono, with sustain.</dd><dt>Room Lift</dt><dd>SUSTAIN up in every band and the upper bands wider: more room.</dd><dt>Snappy Mix Bus</dt><dd>Attack, drive and a little width across the bands, mixed in parallel.</dd><dt>Thick and Hot</dt><dd>Heavy drive in every band.</dd><dt>Clean Width</dt><dd>No saturation (MIX 0): width only, narrower lows and wider highs.</dd><dt>Reset all to defaults</dt><dd>(Last in the list.) Init, with INPUT, OUTPUT, STEREO / MONO and DRIFT back to their defaults too.</dd></dl>
+<h2>Tips</h2><ul class="tips"><li>On a mix bus, start at Gentle Warmth and bring MIX down until you only just hear it.</li><li>Set the LOW / MID crossover between the kick and the bass and the drums' body, then shape each separately.</li><li>Use MONO to check that wide highs haven't gone hollow.</li><li>For width without colour, use Clean Width: MIX at 0 bypasses the saturation.</li></ul>
+<p class="file">File: gfx-multi-transat.jsfx</p></section></main>
+<footer><div class="wrap">GFX (Garden FX) - free JSFX plug-ins for REAPER. Designed by JGWizrad. <a href="https://www.gardenfx.uk/">https://www.gardenfx.uk/</a> &copy; 2026 John Garden.</div></footer></body></html>

@@ -1,0 +1,37 @@
+What to put back when these are released (copied out when they were pulled back, Oct 2026):
+
+MANUAL INDEX (TRDI), in its category list:
+<a href="gfx-trdi.html">TRDI<span>A passive transformer DI: a 1:1 nickel-iron core with soft low-end saturation.</span></a>
+
+MANUAL INDEX (FYRE), in its category list:
+<a href="gfx-fyre.html">FYRE<span>A vintage British 3-in-1 tone rack: clean boost, treble booster and fuzz, in any order.</span></a>
+
+MANUAL INDEX (Multi Transat), in its category list:
+<a href="gfx-multi-transat.html">Multi Transat<span>Three-band analogue saturation with per-band transient shaping and stereo width.</span></a>
+
+README line (TRDI):
+  TRDI            gfx-trdi.jsfx
+
+README line (FYRE):
+  FYRE            gfx-fyre.jsfx
+
+README line (Multi Transat):
+  Multi Transat   gfx-multi-transat.jsfx
+
+WEBSITE CARD (TRDI), in index.html's P list:
+  ["TRDI", "gfx-trdi", "util", "A passive transformer DI with a 1:1 nickel-iron core: flat from 20 Hz to 20 kHz, and soft magnetic saturation that lands on the lows first when you push it. Input load, ground lift, RF filter, polarity and the box's 1 dB insertion loss.", ["Ni-Fe core", "level-compensated drive", "10 presets"]],
+
+WEBSITE CARD (FYRE), in index.html's P list:
+  ["FYRE", "gfx-fyre", "amp", "A vintage British 3-in-1 tone rack: a clean boost with sparkle, a single-transistor treble booster (germanium or silicon, treble, full or mid) and a thick two-transistor fuzz that cleans up with your volume knob. Move the three into any order with the arrow keys; changes are click-free.", ["boost / treble / fuzz", "any order", "12 presets"]],
+
+WEBSITE CARD (Multi Transat), in index.html's P list:
+  ["Multi Transat", "gfx-multi-transat", "mast", "Three-band analogue saturation in the spirit of a mid-70s British design: a phase-aligned crossover that sums flat, and on every band a transient shaper, warm level-compensated drive with parallel mix, and stereo width. A stereo / mono check and heat-and-bias drift.", ["3 bands", "transients + saturation + width", "12 presets"]],
+
+GLANCE ROW (TRDI), glance/utilities.html:
+<tr><td class="n"><a href="../img/gfx-trdi.webp"><img src="../img/gfx-trdi.webp" alt="TRDI" loading="lazy"><b>TRDI</b><span>Panel</span></a><div class="acts"><a href="../manual/gfx-trdi.pdf" target="_blank" rel="noopener">Manual PDF</a><a class="js-dl" href="../files/gfx-trdi.jsfx" data-file="gfx-trdi.jsfx" title="Needs the GFX system files in the same folder">Download</a><a class="sys" href="../files/GFX-system-files.zip" title="Download once - works for every plug-in">+ System files</a></div></td><td>Passive transformer DI boxes</td><td><ul><li>1:1 nickel-iron core, 20 Hz - 20 kHz</li><li>Soft low-end saturation, level-compensated</li><li>Load, lift, RF filter, polarity</li></ul></td><td>DI bass, kick and low synths with weight</td></tr>
+
+GLANCE ROW (FYRE), glance/amps.html:
+<tr><td class="n"><a href="../img/gfx-fyre.webp"><img src="../img/gfx-fyre.webp" alt="FYRE" loading="lazy"><b>FYRE</b><span>Panel</span></a><div class="acts"><a href="../manual/gfx-fyre.pdf" target="_blank" rel="noopener">Manual PDF</a><a class="js-dl" href="../files/gfx-fyre.jsfx" data-file="gfx-fyre.jsfx" title="Needs the GFX system files in the same folder">Download</a><a class="sys" href="../files/GFX-system-files.zip" title="Download once - works for every plug-in">+ System files</a></div></td><td>British 60s / 70s boost, treble booster and fuzz pedals</td><td><ul><li>Clean boost with sparkle</li><li>Treble booster: GE / SI, treble / full / mid</li><li>Two-transistor fuzz that cleans up, any order</li></ul></td><td>Classic British lead tones, stacked any way</td></tr>
+
+GLANCE ROW (Multi Transat), glance/mastering.html:
+<tr><td class="n"><a href="../img/gfx-multi-transat.webp"><img src="../img/gfx-multi-transat.webp" alt="Multi Transat" loading="lazy"><b>Multi Transat</b><span>Panel</span></a><div class="acts"><a href="../manual/gfx-multi-transat.pdf" target="_blank" rel="noopener">Manual PDF</a><a class="js-dl" href="../files/gfx-multi-transat.jsfx" data-file="gfx-multi-transat.jsfx" title="Needs the GFX system files in the same folder">Download</a><a class="sys" href="../files/GFX-system-files.zip" title="Download once - works for every plug-in">+ System files</a></div></td><td>Mid-70s British three-band saturation units</td><td><ul><li>Phase-aligned 3-band split</li><li>Per-band transients, drive, mix, width</li><li>Stereo / mono check, heat drift</li></ul></td><td>Warmth, punch and width on buses and masters</td></tr>
