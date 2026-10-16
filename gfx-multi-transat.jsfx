@@ -231,6 +231,8 @@ mt_snap ? (
 xL.xo_tidy(); xR.xo_tidy(); bL.bd_tidy(); bM.bd_tidy(); bH.bd_tidy();
 // the panel's mailboxes
 mta_pi = max(mta_pi, mt_pi); mt_pi = 0; mta_po = max(mta_po, mt_po); mt_po = 0;
+mta_l0 = max(mta_l0, mt_l0); mta_l1 = max(mta_l1, mt_l1); mta_m0 = max(mta_m0, mt_m0); mta_m1 = max(mta_m1, mt_m1);
+mta_h0 = max(mta_h0, mt_h0); mta_h1 = max(mta_h1, mt_h1); mt_l0 = mt_l1 = mt_m0 = mt_m1 = mt_h0 = mt_h1 = 0;
 mta_gL = bL.gmon; mta_gM = bM.gmon; mta_gH = bH.gmon;
 mta_hL = bL.heat; mta_hM = bM.heat; mta_hH = bH.heat;
 
@@ -244,6 +246,8 @@ xL.xo_run(mt_xl); xR.xo_run(mt_xr);
 // the three bands
 bL.bd_run(xL.lo, xR.lo); bM.bd_run(xL.mi, xR.mi); bH.bd_run(xL.hi, xR.hi);
 mt_yl = bL.oL + bM.oL + bH.oL; mt_yr = bL.oR + bM.oR + bH.oR;
+mt_l0 = max(mt_l0, abs(bL.oL)); mt_l1 = max(mt_l1, abs(bL.oR)); mt_m0 = max(mt_m0, abs(bM.oL)); mt_m1 = max(mt_m1, abs(bM.oR));
+mt_h0 = max(mt_h0, abs(bH.oL)); mt_h1 = max(mt_h1, abs(bH.oR));
 // OUTPUT, STEREO / MONO (faded)
 mt_outs += (mt_outt - mt_outs) * mt_gs; mt_mns += (mt_mono - mt_mns) * mt_gs;
 mt_mns > 0.0005 ? ( mt_m = 0.5 * (mt_yl + mt_yr); mt_yl += mt_mns * (mt_m - mt_yl); mt_yr += mt_mns * (mt_m - mt_yr); );
@@ -254,153 +258,292 @@ spl0 = max(-4, min(4, ost_l));
 spl1 = max(-4, min(4, ost_r));
 mt_po = max(mt_po, max(abs(spl0), abs(spl1)));
 
-@gfx 1272 460
-ui_begin(1272, 460);
+@gfx 1080 430
+ui_begin(1080, 430);
 // =====================================================================
-// GUI - dark green 1970s rack, black band panels, light green caps and lit keys (design space 1272 x 460; S / M / L).
-// INPUT, LOW | crossover | MID | crossover | HIGH, OUTPUT; a DRIFT / meter strip below.
-// Knobs: drag (SHIFT = fine), wheel, double-click = default; the label shows the value while the knob is touched.
+// GUI - in the manner of KRT81: a heavy dark green faceplate with steel corner brackets and hex bolts, sharp-cornered
+// black sections, black bakelite knobs with printed scales (INPUT, OUTPUT, each band's DRIVE), small capped knobs,
+// a BAND LEVEL window (LOW / MID / HIGH, L / R ladders and each band's transient bar). Design space 1080 x 430.
+// Knobs: drag (SHIFT = fine), wheel, double-click = default; the name shows the value while the knob is touched.
 // =====================================================================
-sc != mg_lsc ? (
-  mg_lsc = sc;
-  gfx_setfont(11, "Trebuchet MS", 18 * sc, 'b');     // section titles
-  gfx_setfont(12, "Trebuchet MS", 14 * sc, 'b');     // knob labels / values
-  gfx_setfont(13, "Trebuchet MS", 12 * sc, 'b');     // small print
-  gfx_setfont(14, "Trebuchet MS", 13 * sc, 'b');     // keys
-  gfx_setfont(15, "Trebuchet MS", 27 * sc, 'b');     // the unit's name
-);
-MG_FACE = 0x1E3A27; MG_PLATE = 0x0D0F0E; MG_EDGE = 0x3D6A4A; MG_INK = 0xE6F2E6; MG_DIM = 0x8FB59A; MG_LG = 0x9EE6A0;
-MG_TRAY = 0x0A0C0B; MG_AMB = 0xFFB347; MG_PTRC = 0x0B2E16;
+KRP = 0x1E3A27;                                           // dark green faceplate
+KRF = 0x0E1410;                                           // the sections: green-black
+KRH = ui_mix(KRP, 0x000000, 0.35);                        // header strip
+KRI = 0xCDEBCB;                                           // print: pale green
+KRI2 = ui_mix(KRI, KRF, 0.40);
+KRA = 0x9EE6A0;                                           // light green: active, pointers
+KRW = 0x050806;                                           // meter window
+KRM = 0x4A524A;                                           // bracket steel
+KRC = 0x9EE6A0;                                           // small knob caps: light green
+KRPT = 0x0B2E16;                                          // their pointers: very dark green
+KRGH = 0x0F1A12; KRAMB = 0xFFB347; KRRED = 0xE0442A;
 
-function mg_rr(x, y, w, h, r) local(x1, y1, x2, y2, rr) (
-  x1 = floor(x * sc + 0.5); y1 = floor(y * sc + 0.5); x2 = floor((x + w) * sc + 0.5); y2 = floor((y + h) * sc + 0.5);
-  rr = min(floor(r * sc + 0.5), floor((min(x2 - x1, y2 - y1)) * 0.5));
-  gfx_a < 1 ? ui_rrs(x1, y1, x2 - x1, y2 - y1, rr) : (
-    gfx_rect(x1 + rr, y1, x2 - x1 - 2 * rr, y2 - y1);
-    gfx_rect(x1, y1 + rr, rr + 1, y2 - y1 - 2 * rr); gfx_rect(x2 - rr - 1, y1 + rr, rr + 1, y2 - y1 - 2 * rr);
-    gfx_circle(x1 + rr, y1 + rr, rr, 1, 1); gfx_circle(x2 - rr - 1, y1 + rr, rr, 1, 1);
-    gfx_circle(x1 + rr, y2 - rr - 1, rr, 1, 1); gfx_circle(x2 - rr - 1, y2 - rr - 1, rr, 1, 1);
-  );
+gfx_setfont(6,  "Trebuchet MS", 27 * sc, 'b');            // title
+gfx_setfont(10, "Trebuchet MS", 13 * sc, 'b');            // scale numbers
+gfx_setfont(11, "Trebuchet MS", 13 * sc, 'b');            // labels
+gfx_setfont(12, "Trebuchet MS", 13 * sc, 'b');            // key captions
+gfx_setfont(13, "Trebuchet MS", 12 * sc, 'b');            // small print
+gfx_setfont(14, "Trebuchet MS", 15 * sc, 'b');            // knob names
+
+function kr_r(x, y, w, h) ( gfx_rect(x * sc, y * sc, w * sc, h * sc); );
+function kr_txt(x, y, s) ( gfx_x = x * sc; gfx_y = y * sc; gfx_drawstr(s); );
+function kr_ctxt(cx, cy, s) local(tw, th) ( gfx_measurestr(s, tw, th); gfx_x = cx * sc - tw * 0.5; gfx_y = cy * sc - th * 0.5; gfx_drawstr(s); );
+function kr_rtxt(rx, cy, s) local(tw, th) ( gfx_measurestr(s, tw, th); gfx_x = rx * sc - tw; gfx_y = cy * sc - th * 0.5; gfx_drawstr(s); );
+function kr_lbl(x, y, s) ( gfx_setfont(11); ui_col(KRI2); kr_txt(x, y, s); );
+function kr_hov(x, y, w, h) ( mouse_x >= x * sc && mouse_x < (x + w) * sc && mouse_y >= y * sc && mouse_y < (y + h) * sc; );
+// a broad line in pixels (drawn here: no dependence on the system files' line routine)
+function kr_thick(x1, y1, x2, y2, w) local(dx, dy, l, nx, ny, k) (
+  dx = x2 - x1; dy = y2 - y1; l = max(sqrt(dx * dx + dy * dy), 0.001); nx = -dy / l; ny = dx / l;
+  k = -0.5 * w; loop(floor(w * 2.5) + 1, gfx_line(x1 + nx * k, y1 + ny * k, x2 + nx * k, y2 + ny * k, 1); k += 0.4; );
 );
-function mg_r(x, y, w, h) ( gfx_rect(x * sc, y * sc, max(1, w * sc), max(1, h * sc)); );
-function mg_tc(cx, y, s) ( ui_text(cx * sc, y * sc, s); );
-function mg_tl(x, y, s) ( gfx_x = x * sc; gfx_y = y * sc; gfx_drawstr(s); );
-function mg_tr(x, y, s) local(w, h) ( gfx_measurestr(s, w, h); gfx_x = x * sc - w; gfx_y = y * sc; gfx_drawstr(s); );
-function mg_in(x, y, w, h) ( mouse_x >= x * sc && mouse_x < (x + w) * sc && mouse_y >= y * sc && mouse_y < (y + h) * sc; );
-function mg_key(x, y, w, h, on, col, s) local(hov, hit) (
-  hov = mg_in(x, y, w, h); hit = pressed && hov && drag_id == 0; hit ? drag_id = -1;
-  ui_cola(0x000000, 0.35); mg_rr(x + 1, y + 2, w, h, 4);
-  on ? ( ui_cola(col, 0.22); mg_rr(x - 3, y - 3, w + 6, h + 6, 6); );
-  ui_col(on ? col : 0x1A1D1B); mg_rr(x, y, w, h, 4);
-  !on ? ( ui_col(ui_mix(col, 0x1A1D1B, 0.75)); mg_rr(x, y, w, max(2, 2 / sc), 1); );
-  hov ? ( ui_cola(0xFFFFFF, 0.1); mg_rr(x, y, w, h, 4); );
-  gfx_setfont(14); ui_col(on ? 0x0F1410 : ui_mix(col, MG_INK, 0.45));
-  ui_keytext((x + w * 0.5) * sc, (y + h * 0.5) * sc, s);
+// a flat, sharp-cornered lit key; returns 1 when clicked
+function kr_key(x, y, w, h, lbl, on) local(hov, hit) (
+  hov = kr_hov(x, y, w, h); hit = hov && pressed && drag_id == 0; hit ? drag_id = -1;
+  ui_col(0x050706); kr_r(x, y, w, h);
+  on ? ui_col(KRA) : ui_col(hov ? ui_mix(KRF, 0xFFFFFF, 0.08) : ui_mix(KRF, KRP, 0.5)); kr_r(x + 1, y + 1, w - 2, h - 2);
+  on ? ( ui_cola(KRA, 0.25); kr_r(x - 2, y - 2, w + 4, h + 4); ui_cola(0xFFFFFF, 0.3); kr_r(x + 1, y + 1, w - 2, 1); );
+  on ? ui_col(0x0D1A10) : ui_cola(KRI, 0.85);
+  gfx_setfont(12); kr_ctxt(x + w * 0.5, y + h * 0.5 + 0.5, lbl);
   hit;
 );
-function mg_sec(x0, y0, w, h, title, sub) (
-  ui_cola(0x000000, 0.4); mg_rr(x0 + 1, y0 + 2, w, h, 8);
-  ui_col(MG_EDGE); mg_rr(x0, y0, w, h, 8);
-  ui_col(MG_PLATE); mg_rr(x0 + 1.5, y0 + 1.5, w - 3, h - 3, 7);
-  ui_col(MG_LG); mg_r(x0 + 18, y0 + 12, 4, 22);
-  gfx_setfont(11); ui_col(MG_INK); mg_tl(x0 + 30, y0 + 13, title);
-  gfx_setfont(13); ui_col(MG_DIM); mg_tl(x0 + 18, y0 + 42, sub);
-  dy_bg = MG_PLATE; dy_ink = MG_INK;
+// a section: sharp-cornered face with a thin black frame and its name
+function kr_sect(x, y, w, h, name) (
+  ui_col(0x040605); kr_r(x, y, w, h); ui_col(KRF); kr_r(x + 1, y + 1, w - 2, h - 2);
+  strlen(name) ? kr_lbl(x + 9, y + 6, name);
 );
-// the pointer in very dark green, drawn over the cap's light one (same path, slightly wider)
-function mg_ptr(cx, cy, r, idx, lo, hi, lg) local(n, a, ca, sa, x1, y1, x2, y2, k) (
-  n = lg ? log(slider(idx) / lo) / log(hi / lo) : (slider(idx) - lo) / (hi - lo); n = min(max(n, 0), 1);
-  a = -0.75 * $pi + n * 1.5 * $pi; ca = sin(a); sa = -cos(a);
-  ui_col(MG_PTRC);   // (drawn here, not with ui_ssline: works with any version of the system files)
-  x1 = (cx + ca * r * 0.3) * sc; y1 = (cy + sa * r * 0.3) * sc; x2 = (cx + ca * (r - 3)) * sc; y2 = (cy + sa * (r - 3)) * sc;
-  k = -1.2; loop(7, gfx_line(x1 - sa * k * sc, y1 + ca * k * sc, x2 - sa * k * sc, y2 + ca * k * sc, 1); k += 0.4; );
+// printed scale round a knob: n numbers from the list ("a|b|c"), a tick at each (minor ticks between)
+function kr_scale(cx, cy, r, n, nr, labels, minor) local(i, k, k0, len, c, a, ca, sa, m) (
+  len = strlen(labels); k0 = 0; i = 0; k = 0;
+  minor > 0 ? (
+    m = 0; ui_col(KRI2);
+    loop((n - 1) * minor + 1,
+      a = -0.75 * $pi + m / ((n - 1) * minor) * 1.5 * $pi; ca = sin(a); sa = -cos(a);
+      gfx_line((cx + ca * (r + 4)) * sc, (cy + sa * (r + 4)) * sc, (cx + ca * (r + 6)) * sc, (cy + sa * (r + 6)) * sc, 1);
+      m += 1;
+    );
+  );
+  gfx_setfont(10);
+  loop(len + 1,
+    c = k < len ? str_getchar(labels, k) : 124;
+    c == 124 ? (
+      strcpy_substr(#krv_sl, labels, k0, k - k0);
+      a = -0.75 * $pi + i / max(n - 1, 1) * 1.5 * $pi; ca = sin(a); sa = -cos(a);
+      ui_col(KRI);
+      gfx_line((cx + ca * (r + 3)) * sc, (cy + sa * (r + 3)) * sc, (cx + ca * (r + 8)) * sc, (cy + sa * (r + 8)) * sc, 1);
+      gfx_line((cx + ca * (r + 3)) * sc + 1, (cy + sa * (r + 3)) * sc, (cx + ca * (r + 8)) * sc + 1, (cy + sa * (r + 8)) * sc, 1);
+      kr_ctxt(cx + ca * (r + nr), cy + sa * (r + nr), #krv_sl);
+      i += 1; k0 = k + 1;
+    );
+    k += 1;
+  );
 );
-function mg_knob(cx, cy, r, idx, lo, hi, def, lg, lbl, val) (
-  dy_kst = 36; dy_knob(cx, cy, r, idx, lo, hi, def, lg, MG_LG, "", ""); mg_ptr(cx, cy, r, idx, lo, hi, lg);
-  gfx_setfont(12); ui_col(dy_act ? MG_LG : MG_INK); mg_tc(cx, cy + r + 24, dy_act ? val : lbl);
+// the chunky bakelite knob (pixels): a fluted black skirt, a flat cap, a broad light green pointer
+function kr_bake(cx, cy, r, a) local(i, t, ca, sa, k) (
+  ca = sin(a); sa = -cos(a);
+  ui_cola(0x000000, 0.55); gfx_circle(cx + 2.5 * sc, cy + 4.5 * sc, r * 1.02, 1, 1);
+  ui_col(0x0A0B0A); gfx_circle(cx, cy, r + 1 * sc, 1, 1);
+  ui_col(0x181A18); gfx_circle(cx, cy, r, 1, 1);
+  i = 0;
+  loop(16,
+    t = i / 16 * 2 * $pi; k = 0.5 + 0.5 * cos(t + 0.8);
+    ui_col(ui_mix(0x0C0E0C, 0x434A43, k * 0.8)); gfx_circle(cx + sin(t) * r * 0.86, cy - cos(t) * r * 0.86, r * 0.15, 1, 1);
+    ui_col(0x0C0E0C); gfx_circle(cx + sin(t + 0.196) * r * 0.9, cy - cos(t + 0.196) * r * 0.9, r * 0.075, 1, 1);
+    i += 1;
+  );
+  ui_col(0x080908); gfx_circle(cx, cy, r * 0.70 + 1 * sc, 1, 1);
+  ui_col(0x202320); gfx_circle(cx, cy, r * 0.70, 1, 1);
+  ui_cola(0xFFFFFF, 0.08); gfx_circle(cx, cy, r * 0.70, 0, 1);
+  ui_col(0x060706); kr_thick(cx + ca * r * 0.18, cy + sa * r * 0.18, cx + ca * r * 0.98, cy + sa * r * 0.98, 4.2 * sc);
+  ui_col(KRA); kr_thick(cx + ca * r * 0.22, cy + sa * r * 0.22, cx + ca * r * 0.95, cy + sa * r * 0.95, 2.5 * sc);
 );
-function mg_db(cx, cy, r, idx, lo, hi, def, lbl) ( sprintf(#mgv, "%+.1f dB", slider(idx)); mg_knob(cx, cy, r, idx, lo, hi, def, 0, lbl, #mgv); );
-function mg_pc(cx, cy, r, idx, hi, def, lbl) ( sprintf(#mgv, "%d%%", floor(slider(idx) + 0.5)); mg_knob(cx, cy, r, idx, 0, hi, def, 0, lbl, #mgv); );
-function mg_inset(x, y, w, h) ( pk_inset(x * sc, y * sc, w * sc, h * sc, MG_TRAY); );
-function mg_hz(f) ( f >= 1000 ? sprintf(#mgh, "%.1f kHz", f / 1000) : sprintf(#mgh, "%d Hz", floor(f + 0.5)); #mgh; );
-// a band panel: x0, the five knobs (first slider), its transient gain and heat
-function mg_band(x0, base, title, sub, gm, ht) local(cx, n, w) (
-  mg_sec(x0, 72, 260, 300, title, sub);
-  // HEAT lamp
-  ht = min(max(ht * mt_dm * 1.4, 0), 1);
-  ui_cola(MG_AMB, 0.08 + 0.3 * ht); gfx_circle((x0 + 236) * sc, 96 * sc, 10 * sc, 1, 1);
-  ui_col(ui_mix(0x2A2316, MG_AMB, ht)); gfx_circle((x0 + 236) * sc, 96 * sc, 6 * sc, 1, 1);
-  gfx_setfont(13); ui_col(MG_DIM); mg_tr(x0 + 222, 90, "HEAT");
-  // transient gain bar: -15 .. +15 dB, centred
-  mg_inset(x0 + 20, 132, 220, 10);
-  n = min(max(gm / 15, -1), 1); w = 110 * n;
-  ui_col(n >= 0 ? MG_LG : MG_AMB);
-  abs(w) > 0.5 ? ( n >= 0 ? mg_r(x0 + 130, 137, w, 4) : mg_r(x0 + 130 + w, 137, -w, 4); );
-  ui_col(MG_DIM); mg_r(x0 + 129.5, 134, 1, 10);
-  // TRANSIENTS row
-  mg_db(x0 + 82, 186, 26, base, -15, 15, 0, "ATTACK");
-  mg_db(x0 + 178, 186, 26, base + 1, -15, 15, 0, "SUSTAIN");
-  // SATURATION / WIDTH row
-  mg_db(x0 + 52, 288, 24, base + 2, 0, 24, 6, "DRIVE");
-  mg_pc(x0 + 130, 288, 24, base + 3, 100, 100, "MIX");
-  mg_pc(x0 + 208, 288, 24, base + 4, 200, 100, "WIDTH");
+// the small knob (pixels): a light green cap on a dark skirt, a very dark green pointer
+function kr_scap(cx, cy, r, a) local(ca, sa, k) (
+  ca = sin(a); sa = -cos(a);
+  ui_cola(0x000000, 0.5); gfx_circle(cx + 1.5 * sc, cy + 2.5 * sc, r, 1, 1);
+  ui_col(0x101310); gfx_circle(cx, cy, r, 1, 1);
+  ui_cola(0xFFFFFF, 0.12); gfx_circle(cx, cy, r, 0, 1);
+  k = r * 0.74;
+  ui_col(KRC); gfx_circle(cx, cy, k, 1, 1);
+  ui_col(ui_mix(KRC, 0x000000, 0.35)); gfx_circle(cx, cy, k, 0, 1);
+  ui_col(KRPT); kr_thick(cx + ca * k * 0.2, cy + sa * k * 0.2, cx + ca * r * 0.94, cy + sa * r * 0.94, 2.6 * sc);
 );
+krv_small = 0; krv_lg = 0;
+function kr_kn(v, lo, hi) ( krv_lg ? log(max(v, lo) / lo) / log(hi / lo) : (v - lo) / (hi - lo); );
+function kr_kv(n, lo, hi) ( krv_lg ? lo * exp(n * log(hi / lo)) : lo + n * (hi - lo); );
+// a knob: drag (shift = fine), double-click = default, wheel; returns 1 while touched
+function kr_knob(cx, cy, r, idx, lo, hi, def) local(v, n, dx, dy, hov, did) (
+  did = 1700 + idx; v = slider(idx);
+  dx = mouse_x - cx * sc; dy = mouse_y - cy * sc; hov = dx * dx + dy * dy <= sqr((r + 5) * sc);
+  pressed && hov && drag_id == 0 ? (
+    time_precise() - krv_lt < 0.35 && krv_lid == idx ? ( slider(idx) = def; ui_auto(idx); drag_id = -1; krv_lt = 0; ) : (
+      drag_id = did; krv_y = mouse_y; krv_lt = time_precise(); krv_lid = idx; krv_n = kr_kn(v, lo, hi);
+    );
+  );
+  drag_id == did ? (
+    krv_n = min(max(krv_n + (krv_y - mouse_y) / (((mouse_cap & 8) ? 1200 : 240) * sc), 0), 1); krv_y = mouse_y;
+    v = kr_kv(krv_n, lo, hi); slider(idx) != v ? ( slider(idx) = v; ui_auto(idx); );
+  );
+  hov && mouse_wheel != 0 && drag_id == 0 ? (
+    n = min(max(kr_kn(v, lo, hi) + mouse_wheel / 120 * ((mouse_cap & 8) ? 0.005 : 0.025), 0), 1);
+    slider(idx) = kr_kv(n, lo, hi); ui_auto(idx); mouse_wheel = 0;
+  );
+  v = slider(idx); n = min(max(kr_kn(v, lo, hi), 0), 1);
+  krv_small ? kr_scap(cx * sc, cy * sc, r * sc, -0.75 * $pi + n * 1.5 * $pi) : kr_bake(cx * sc, cy * sc, r * sc, -0.75 * $pi + n * 1.5 * $pi);
+  hov || drag_id == did ? ( ui_cola(0xFFFFFF, 0.07); gfx_circle(cx * sc, cy * sc, (r + 2) * sc, 1, 1); );
+  hov || drag_id == did;
+);
+function kr_name(cx, cy, act, name, val) ( gfx_setfont(14); ui_col(act ? KRA : KRI); kr_ctxt(cx, cy, act ? val : name); );
+// a small knob with its tick ring and name (the value while touched)
+function kr_small(cx, cy, r, idx, lo, hi, def, name, val) local(i, t, act) (
+  ui_cola(KRI, 0.85); i = 0;
+  loop(11, t = -0.75 * $pi + i / 10 * 1.5 * $pi;
+    gfx_line((cx + sin(t) * (r + 4)) * sc, (cy - cos(t) * (r + 4)) * sc, (cx + sin(t) * (r + 8)) * sc, (cy - cos(t) * (r + 8)) * sc, 1); i += 1; );
+  krv_small = 1; act = kr_knob(cx, cy, r, idx, lo, hi, def); krv_small = 0;
+  gfx_setfont(11); ui_col(act ? KRA : KRI); kr_ctxt(cx, cy + r + 16, act ? val : name);
+);
+// ladder cells
+function kr_cell(x, y, w, h, lit, zone) local(c) (
+  c = zone == 2 ? KRRED : zone == 1 ? KRAMB : KRA;
+  lit ? ( ui_cola(c, 0.16); kr_r(x - 0.5, y - 1, w + 1, h + 2); ui_col(c); kr_r(x, y, w, h); ui_cola(0xFFFFFF, 0.22); kr_r(x, y, w, 1.5); )
+      : ( ui_col(KRGH); kr_r(x, y, w, h); ui_cola(0x000000, 0.25); kr_r(x, y + h - 1, w, 1); );
+);
+function kr_hbar(x, y, w, h, v) local(n, i, sw, d) (
+  n = 30; sw = w / n; i = 0;
+  loop(n, d = -48 + (i + 0.5) / n * 48; kr_cell(x + i * sw + 0.5, y, sw - 2, h, v >= d, d > -3 ? 2 : d > -12 ? 1 : 0); i += 1; );
+);
+function kr_window(x, y, w, h) ( ui_col(0x040605); kr_r(x, y, w, h); ui_col(KRW); kr_r(x + 1, y + 1, w - 2, h - 2); );
+// the heavy faceplate: corner brackets with hex bolts
+function kr_bolt(cx, cy, r) local(i, t, k) (
+  ui_cola(0x000000, 0.45); gfx_circle((cx + 1) * sc, (cy + 1.5) * sc, r * sc, 1, 1);
+  ui_col(ui_mix(KRM, 0x000000, 0.45)); gfx_circle(cx * sc, cy * sc, r * sc, 1, 1);
+  ui_col(ui_mix(KRM, 0xFFFFFF, 0.25)); gfx_circle(cx * sc, cy * sc, (r - 1) * sc, 1, 1);
+  i = 0;
+  loop(6,
+    t = i / 6 * 2 * $pi + 0.26; k = 0.5 + 0.5 * cos(t + 0.52 + 0.8);
+    ui_col(ui_mix(ui_mix(KRM, 0x000000, 0.35), ui_mix(KRM, 0xFFFFFF, 0.45), k));
+    gfx_triangle(cx * sc, cy * sc, (cx + cos(t) * r * 0.8) * sc, (cy + sin(t) * r * 0.8) * sc, (cx + cos(t + 1.0472) * r * 0.8) * sc, (cy + sin(t + 1.0472) * r * 0.8) * sc);
+    i += 1;
+  );
+  ui_col(ui_mix(KRM, 0xFFFFFF, 0.12)); gfx_circle(cx * sc, cy * sc, r * 0.48 * sc, 1, 1);
+);
+function kr_bracket(x, y, sx, sy) local(L, T, x0, y0) (
+  L = 64; T = 18; x0 = sx > 0 ? x : x - L; y0 = sy > 0 ? y : y - T;
+  ui_cola(0x000000, 0.35); kr_r(x0 + 1.5, y0 + 2, L, T); kr_r((sx > 0 ? x : x - T) + 1.5, (sy > 0 ? y : y - L) + 2, T, L);
+  ui_col(ui_mix(KRM, 0x000000, 0.4)); kr_r(x0, y0, L, T); kr_r(sx > 0 ? x : x - T, sy > 0 ? y : y - L, T, L);
+  ui_col(KRM); kr_r(x0 + 1, y0 + 1, L - 2, T - 2); kr_r((sx > 0 ? x : x - T) + 1, (sy > 0 ? y : y - L) + 1, T - 2, L - 2);
+  ui_cola(0xFFFFFF, 0.22); kr_r(x0 + 1, y0 + 1, L - 2, 1); kr_r((sx > 0 ? x : x - T) + 1, (sy > 0 ? y : y - L) + 1, 1, L - 2);
+  kr_bolt(x + sx * 10, y + sy * 9.5, 7); kr_bolt(x + sx * (L - 10), y + sy * 9, 4.5); kr_bolt(x + sx * 9, y + sy * (L - 10), 4.5);
+);
+function kr_hz(f) ( f >= 1000 ? sprintf(#krh, "%.1f kHz", f / 1000) : sprintf(#krh, "%d Hz", floor(f + 0.5)); #krh; );
+function kr_db(v) ( sprintf(#krd, "%+.1f dB", v); #krd; );
+function kr_pc(v) ( sprintf(#krp, "%d%%", floor(v + 0.5)); #krp; );
 
 // =====================================================================
-// Draw
+// Faceplate and header
 // =====================================================================
-ui_col(MG_FACE); gfx_rect(0, 0, gfx_w, gfx_h);
-// a fine vertical brushing on the green face
-mg_i = 0; loop(63, ui_cola(0x000000, 0.05 + 0.04 * ((mg_i * 7) % 3)); mg_r(mg_i * 20.2, 0, 1, 460); mg_i += 1; );
-ui_cola(0x000000, 0.3); mg_r(0, 58, 1272, 1);
-ui_cola(0xFFFFFF, 0.06); mg_r(0, 59, 1272, 1);
-
-// ---------- header ----------
-ui_col(MG_INK); gfx_circle(48 * sc, 30 * sc, 16 * sc, 1, 1);
-gfx_setfont(13); ui_col(MG_FACE); ui_keytext(48 * sc, 30 * sc, "GFX");
-gfx_setfont(15); ui_col(MG_INK); mg_tl(76, 13, "MULTI TRANSAT"); gfx_measurestr("MULTI TRANSAT", mg_tw, mg_th);
-mg_x = 88 + mg_tw / sc;
-ui_col(MG_LG); mg_r(mg_x, 20, 8, 8); ui_col(0x000000); mg_r(mg_x + 11, 20, 8, 8); ui_col(MG_LG); mg_r(mg_x + 22, 20, 8, 8);
-gfx_setfont(13); ui_col(MG_DIM); mg_tl(mg_x, 33, "3-BAND SATURATION  ·  1976");
+ui_col(ui_mix(KRP, 0x000000, 0.35)); gfx_rect(0, 0, gfx_w, gfx_h);
+ui_cola(0xFFFFFF, 0.08); kr_r(0, 0, 1080, 1.5); kr_r(0, 0, 1.5, 430);
+ui_cola(0x000000, 0.35); kr_r(0, 428.5, 1080, 1.5); kr_r(1078.5, 0, 1.5, 430);
+ui_col(KRP); kr_r(12, 12, 1056, 406);
+ui_cola(0x000000, 0.30); kr_r(12, 12, 1056, 1.5); kr_r(12, 12, 1.5, 406);
+ui_cola(0xFFFFFF, 0.07); kr_r(12, 416.5, 1056, 1.5); kr_r(1066.5, 12, 1.5, 406);
+ui_col(KRH); kr_r(13.5, 13.5, 1053, 50.5);
+ui_col(KRA); kr_r(13.5, 64, 1053, 2);
+ui_col(KRA); gfx_circle(45 * sc, 39 * sc, 16 * sc, 1, 1);
+gfx_setfont(4); ui_col(0x0D1A10); ui_text(45 * sc, 33.5 * sc, "GFX");
+gfx_setfont(6); ui_col(KRI); kr_txt(72, 24, "MULTI TRANSAT"); gfx_measurestr("MULTI TRANSAT", krv_tw, krv_th);
+krv_tx = 72 + krv_tw / sc + 14;
+gfx_setfont(11); ui_col(KRI2); kr_txt(krv_tx, 25, "3-BAND SATURATION"); kr_txt(krv_tx, 40, "TRANSIENTS · WIDTH");
 pk_pextra = "Reset all to defaults";
-mg_k = pk_preset(560 * sc, 14 * sc, 430 * sc, 30 * sc, pr_cur, #mt_pm);
-mg_k > 0 ? load_preset(mg_k);
-ui_size_picker(1176 * sc, 20 * sc);
+k_ = pk_preset(470 * sc, 22 * sc, 300 * sc, 34 * sc, pr_cur, #mt_pm);
+k_ > 0 ? load_preset(k_);
+kr_key(786, 25, 72, 28, "STEREO", slider19 < 0.5) ? ( slider19 = 0; ui_auto(19); );
+kr_key(862, 25, 60, 28, "MONO", slider19 >= 0.5) ? ( slider19 = 1; ui_auto(19); );
+ui_size_picker(1000 * sc, 30 * sc);
 
-// ---------- INPUT ----------
-mg_sec(24, 72, 140, 300, "INPUT", "");
-mg_key(40, 118, 108, 28, slider19 < 0.5, MG_LG, "STEREO") ? ( slider19 = 0; ui_auto(19); );
-mg_key(40, 154, 108, 28, slider19 >= 0.5, MG_AMB, "MONO") ? ( slider19 = 1; ui_auto(19); );
-mg_db(94, 262, 30, 1, -12, 12, 0, "INPUT");
+// =====================================================================
+// Upper row (y 72 .. 206): INPUT, BAND LEVEL, CROSSOVER, DRIFT, OUTPUT
+// =====================================================================
+kr_sect(22, 72, 112, 134, "INPUT");
+kr_scale(78, 146, 26, 5, 20, "-12|-6|0|+6|+12", 2);
+krv_a = kr_knob(78, 146, 26, 1, -12, 12, 0); kr_name(78, 192, krv_a, "INPUT", kr_db(slider1));
 
-// ---------- the bands and the crossovers between them ----------
-sprintf(#mgs1, "BELOW %s", mg_hz(slider2)); mg_band(176, 4, "LOW", #mgs1, mta_gL, mta_hL);
-strcpy(#mgs2, mg_hz(slider2)); strcat(#mgs2, " - "); strcat(#mgs2, mg_hz(max(slider3, slider2 * 1.5))); mg_band(506, 9, "MID", #mgs2, mta_gM, mta_hM);
-sprintf(#mgs3, "ABOVE %s", mg_hz(max(slider3, slider2 * 1.5))); mg_band(836, 14, "HIGH", #mgs3, mta_gH, mta_hH);
-dy_bg = MG_FACE; dy_ink = MG_INK;
-gfx_setfont(13); ui_col(MG_DIM); mg_tc(471, 150, "LOW / MID"); mg_tc(801, 150, "MID / HIGH");
-dy_kst = 36; dy_knob(471, 214, 24, 2, 50, 1000, 250, 1, MG_LG, "", ""); mg_ptr(471, 214, 24, 2, 50, 1000, 1);
-gfx_setfont(12); ui_col(dy_act ? MG_LG : MG_INK); mg_tc(471, 262, mg_hz(slider2));
-dy_kst = 36; dy_knob(801, 214, 24, 3, 1000, 12000, 4000, 1, MG_LG, "", ""); mg_ptr(801, 214, 24, 3, 1000, 12000, 1);
-gfx_setfont(12); ui_col(dy_act ? MG_LG : MG_INK); mg_tc(801, 262, mg_hz(slider3));
-ui_col(MG_EDGE); mg_r(471, 286, 1, 70); mg_r(801, 286, 1, 70);
+// ---------- BAND LEVEL ----------
+kr_sect(140, 72, 472, 134, "");
+kr_window(146, 78, 460, 122);
+gfx_setfont(11); ui_col(KRI); kr_txt(154, 83, "BAND LEVEL"); ui_col(KRI2); kr_txt(240, 83, "L / R"); kr_rtxt(470, 90, "dBFS");
+ui_col(KRI); kr_txt(492, 83, "TRANSIENT");
+// the meters fall back at about 20 dB a second
+function kr_fall(v, pk) ( pk = pk > 0.0000001 ? 20 * log10(pk) : -90; pk > v ? pk : max(v - 0.6, -90); );
+krv_l0 = kr_fall(krv_l0, mta_l0); krv_l1 = kr_fall(krv_l1, mta_l1); krv_m0 = kr_fall(krv_m0, mta_m0);
+krv_m1 = kr_fall(krv_m1, mta_m1); krv_h0 = kr_fall(krv_h0, mta_h0); krv_h1 = kr_fall(krv_h1, mta_h1);
+mta_l0 = mta_l1 = mta_m0 = mta_m1 = mta_h0 = mta_h1 = 0;
+function kr_tbar(x, y, g) local(n, w) (                   // a transient bar: -15 .. +15 dB about the centre
+  ui_col(0x2A3A2C); kr_r(x, y, 92, 14); ui_col(KRW); kr_r(x + 1, y + 1, 90, 12);
+  n = min(max(g / 15, -1), 1); w = 42 * n;
+  ui_col(n >= 0 ? KRA : KRAMB);
+  abs(w) > 0.5 ? ( n >= 0 ? kr_r(x + 46, y + 4, w, 6) : kr_r(x + 46 + w, y + 4, -w, 6); );
+  ui_col(KRI2); kr_r(x + 45.5, y + 2, 1, 10);
+);
+function kr_pair(y, nm, v0, v1, g) (
+  gfx_setfont(11); ui_col(KRI); kr_rtxt(198, y + 10, nm);
+  kr_hbar(204, y, 270, 9, v0); kr_hbar(204, y + 11, 270, 9, v1);
+  kr_tbar(492, y + 3, g);
+);
+kr_pair(102, "LOW", krv_l0, krv_l1, mta_gL);
+kr_pair(128, "MID", krv_m0, krv_m1, mta_gM);
+kr_pair(154, "HIGH", krv_h0, krv_h1, mta_gH);
+gfx_setfont(13); krv_i = 0;
+loop(5,
+  krv_d = krv_i == 0 ? -48 : krv_i == 1 ? -36 : krv_i == 2 ? -24 : krv_i == 3 ? -12 : 0;
+  krv_xx = 204 + (krv_d + 48) / 48 * 270;
+  ui_col(krv_d > -12.5 ? KRAMB : KRI2); kr_r(krv_xx - 0.5, 178, 1, 4);
+  sprintf(#krv_tl, "%d", krv_d); kr_ctxt(krv_xx - (krv_i == 4 ? 4 : 0), 190, #krv_tl);
+  krv_i += 1;
+);
+ui_col(KRI2); kr_ctxt(492, 190, "-15"); kr_ctxt(538, 190, "0"); kr_ctxt(582, 190, "+15");
+
+// ---------- CROSSOVER ----------
+kr_sect(618, 72, 200, 134, "CROSSOVER");
+krv_lg = 1; kr_small(674, 140, 17, 2, 50, 1000, 250, "LOW / MID", kr_hz(slider2));
+kr_small(762, 140, 17, 3, 1000, 12000, 4000, "MID / HIGH", kr_hz(slider3)); krv_lg = 0;
+gfx_setfont(13); ui_col(KRI2); kr_ctxt(674, 192, kr_hz(slider2)); kr_ctxt(762, 192, kr_hz(max(slider3, slider2 * 1.5)));
+
+// ---------- DRIFT ----------
+kr_sect(824, 72, 116, 134, "DRIFT");
+kr_small(882, 140, 17, 21, 0, 100, 50, "HEAT / BIAS", kr_pc(slider21));
 
 // ---------- OUTPUT ----------
-mg_sec(1108, 72, 140, 300, "OUTPUT", "");
-mg_db(1178, 262, 30, 20, -12, 12, 0, "OUTPUT");
+kr_sect(946, 72, 112, 134, "OUTPUT");
+kr_scale(1002, 146, 26, 5, 20, "-12|-6|0|+6|+12", 2);
+krv_a = kr_knob(1002, 146, 26, 20, -12, 12, 0); kr_name(1002, 192, krv_a, "TRIM", kr_db(slider20));
 
-// ---------- DRIFT / meter strip ----------
-dy_bg = MG_TRAY; dy_ink = MG_INK;
-mg_inset(24, 384, 376, 66);
-sprintf(#mgv, "%d%%", floor(slider21 + 0.5)); dy_kst = 36; dy_knob(62, 417, 20, 21, 0, 100, 50, 0, MG_LG, "", ""); mg_ptr(62, 417, 20, 21, 0, 100, 0);
-gfx_setfont(12); ui_col(dy_act ? MG_LG : MG_INK); mg_tl(92, 402, dy_act ? #mgv : "DRIFT");
-gfx_setfont(13); ui_col(MG_DIM); mg_tl(92, 424, "HEAT / BIAS");
-mg_inset(412, 384, 836, 66);
-mg_pi = mta_pi; mta_pi = 0; mg_po = mta_po; mta_po = 0;
-mgmI.ui_ledm(470 * sc, 402 * sc, 670 * sc, 9 * sc, mg_pi);
-mgmO.ui_ledm(470 * sc, 424 * sc, 670 * sc, 9 * sc, mg_po);
-gfx_setfont(13); ui_col(MG_DIM); mg_tr(456, 400, "IN"); mg_tr(456, 422, "OUT");
-ui_col(MG_INK); mg_tl(1156, 400, slider19 >= 0.5 ? "MONO" : "STEREO"); ui_col(MG_DIM); mg_tl(1156, 422, "NO CLIP");
+// =====================================================================
+// Lower row (y 212 .. 408): LOW, MID, HIGH - DRIVE (bakelite), ATTACK / SUSTAIN, MIX / WIDTH, the HEAT lamp
+// =====================================================================
+function kr_band(x, base, title, ht) local(w, a) (
+  w = 341;
+  kr_sect(x, 212, w, 196, title);
+  // HEAT lamp
+  ht = min(max(ht * mt_dm * 1.4, 0), 1);
+  ui_cola(KRAMB, 0.08 + 0.3 * ht); gfx_circle((x + w - 20) * sc, 226 * sc, 10 * sc, 1, 1);
+  ui_col(ui_mix(0x2A2316, KRAMB, ht)); gfx_circle((x + w - 20) * sc, 226 * sc, 6 * sc, 1, 1);
+  gfx_setfont(13); ui_col(KRI2); kr_rtxt(x + w - 34, 226, "HEAT");
+  // DRIVE
+  kr_scale(x + 76, 306, 32, 5, 20, "0|6|12|18|24", 2);
+  a = kr_knob(x + 76, 306, 32, base + 2, 0, 24, 6); kr_name(x + 76, 364, a, "DRIVE", kr_db(slider(base + 2)));
+  // ATTACK / SUSTAIN, MIX / WIDTH
+  kr_small(x + 190, 270, 16, base, -15, 15, 0, "ATTACK", kr_db(slider(base)));
+  kr_small(x + 280, 270, 16, base + 1, -15, 15, 0, "SUSTAIN", kr_db(slider(base + 1)));
+  kr_small(x + 190, 350, 16, base + 3, 0, 100, 100, "MIX", kr_pc(slider(base + 3)));
+  kr_small(x + 280, 350, 16, base + 4, 0, 200, 100, "WIDTH", kr_pc(slider(base + 4)));
+);
+sprintf(#krb1, "LOW  ·  BELOW %s", kr_hz(slider2)); kr_band(22, 4, #krb1, mta_hL);
+strcpy(#krb2, "MID  ·  "); strcat(#krb2, kr_hz(slider2)); strcat(#krb2, " - "); strcat(#krb2, kr_hz(max(slider3, slider2 * 1.5))); kr_band(369, 9, #krb2, mta_hM);
+sprintf(#krb3, "HIGH  ·  ABOVE %s", kr_hz(max(slider3, slider2 * 1.5))); kr_band(716, 14, #krb3, mta_hH);
+
+// the corner brackets last (over the rim)
+kr_bracket(0, 0, 1, 1); kr_bracket(1080, 0, -1, 1); kr_bracket(0, 430, 1, -1); kr_bracket(1080, 430, -1, -1);
 
 pk_end();
 ui_end();
