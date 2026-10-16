@@ -9,6 +9,9 @@ folder, as usual.
   TRDI            gfx-trdi.jsfx            Utilities       transformer DI
   ALIGN           gfx-align.jsfx           Utilities       phase / time alignment
   CHECK           gfx-check.jsfx           Utilities       mix-translation monitor controller
+  SHK34           gfx-shk34.jsfx           Drums           shakers + tambourine, step sequencer
+  BEL34           gfx-bel34.jsfx           Drums           cowbell + triangle, step sequencer
+  CLV34           gfx-clv34.jsfx           Drums           clave, woodblocks + agogo, step sequencer
   BED34           gfx-bed34.jsfx           Amps & drive    practice amps (3 models x 3 speakers) + broken speaker
   FYRE            gfx-fyre.jsfx            Amps & drive    boost / treble booster / fuzz rack
   Multi Transat   gfx-multi-transat.jsfx   Mastering       3-band saturation, transients, width
@@ -23,6 +26,7 @@ Ready to release together:
   Utilities     TRDI + ALIGN + CHECK  -> 6 + 3 = 9
   Dynamics      CH34 + SUP34 + GLU34  -> 15 + 3 = 18
   Mastering     Multi Transat + BUS34 + COM34 -> 12 + 3 = 15
+  Drums         SHK34 + BEL34 + CLV34 -> 6 + 3 = 9
 Waiting:
   Amps & drive  FYRE + BED34 + one more drive -> 18 + 3 = 21
   Modulation    BOB34 + two more modulation units -> 21 + 3 = 24
