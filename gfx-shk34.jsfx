@@ -105,14 +105,14 @@ function pc_svt() instance(c1, c2) ( c1 = pc_tn(c1); c2 = pc_tn(c2); );
 
 
 NL = 2;
-SHG = 0.45; TBG = 0.33;                                     // (the instruments' output trims)
+SHG = 0.45; TBG = 0.24;                                     // (the instruments' output trims)
 #ui_man = "gfx-shk34";
 // =====================================================================
 // THE INSTRUMENTS
 // =====================================================================
-pc_nm = 4;                                            // the tambourine: the shell, two jingle resonances (and an upper one)
+pc_nm = 8;                                            // the tambourine: the shell and a fixed bank of detuned jingle pairs
 function ins_note(n) ( pc_mute = 0; n == 70 || n == 82 ? 0 : n == 54 ? 1 : -1; );
-function ins_srinit() ( tb_ks = pc_kd(0.9); tb_kc = pc_kd(0.25); tb_pc = 22050 / srate / 1024; );
+function ins_srinit() ( tb_ks = pc_kd(1.4); tb_kc = pc_kd(0.25); tb_pc = 22050 / srate / 1024; );
 function ins_trig(k, v, a) local(b, r) (
   k == 0 ? (
     sh_dir = 1 - sh_dir;                              // push, pull, push ...
@@ -122,7 +122,6 @@ function ins_trig(k, v, a) local(b, r) (
   ) : (
     tb_E += v * (a ? 1 + 0.05 * pc_acc : 1);           // the shake's energy
     tb_c = v * tb_hit;                                 // the frame's click
-    tb_bs = (0.8 + 0.04 * tb_br) * TUN[1] * (a ? 1 + 0.01 * pc_acc : 1);
   );
 );
 function ins_block() (
@@ -132,9 +131,19 @@ function ins_block() (
   sh_den = (7000 - 550 * sh_bd) / srate; sh_kg = pc_kd(0.15 + 0.25 * sh_bd);
   sh_mk = 0.9 / sqrt(sh_q);
   tb_ring = min(max(slider20, 40), 800); tb_br = min(max(slider21, 0), 10); tb_hit = min(max(slider22, 0), 10) / 5;
-  tb_rt = min(max(slider23, 0), 10) / 10; tb_kE = pc_kd(tb_ring * 0.4);
+  tb_rt = min(max(slider23, 0), 10) / 10; tb_kE = pc_kd(tb_ring * 0.5);
   tb_nob = 8 + 40 * tb_rt;                           // the jingles in play
-  tb_gn = sqrt(250 / tb_ring) * sqrt(28 / tb_nob);    // (the level kept as RING and RATTLE change)
+  tb_gn = sqrt(250 / max(tb_ring, 120)) * (28 / tb_nob) ^ 0.25; // (the level kept as RING and RATTLE change)
+  // the jingles: a fixed bank of slightly detuned pairs that ring cleanly (retuning a ringing mode crackles)
+  tb_bs = (0.8 + 0.04 * tb_br) * TUN[1]; tb_jt = 0.010 + 0.012 * tb_rt;
+  md_setn(0, 1, 2300 * tb_bs, 0.0016, 0.10 * TBG);
+  md_setn(1, 1, 5470 * tb_bs, tb_jt, 0.55 * TBG);
+  md_setn(2, 1, 5730 * tb_bs, tb_jt * 0.9, 0.55 * TBG);
+  md_setn(3, 1, 7860 * tb_bs, tb_jt * 0.8, 0.6 * TBG);
+  md_setn(4, 1, 8120 * tb_bs, tb_jt * 0.85, 0.6 * TBG);
+  md_setn(5, 1, 8410 * tb_bs, tb_jt * 0.75, 0.45 * TBG);
+  md_setn(6, 1, 10950 * tb_bs, tb_jt * 0.6, (0.08 + 0.03 * tb_br) * TBG);
+  md_setn(7, 1, 11650 * tb_bs, tb_jt * 0.55, (0.08 + 0.03 * tb_br) * TBG);
   s1.pc_svt(); s2.pc_svt(); sh_e = pc_tn(sh_e); sh_g = pc_tn(sh_g); tb_E = pc_tn(tb_E); tb_L = pc_tn(tb_L); tb_hp = pc_tn(tb_hp);
 );
 function ins_sample() local(n, x) (
@@ -146,15 +155,10 @@ function ins_sample() local(n, x) (
     n = (rand(2) - 1) * sh_g;
     OUT[0] = (s1.pc_bp(n) + 0.55 * s2.pc_bp(n) + 0.12 * n) * sh_mk * SHG;
   );
-  // TAMBOURINE (PhISEM): collisions at random, while the shake's energy lasts; each retunes the jingles a little
-  tb_E > 0.0001 ? (
-    rand(1) < tb_nob * tb_pc ? (
-      tb_L += 0.8 * tb_E * tb_gn;
-      md_setn(0, 1, 2300 * tb_bs * (1 + 0.04 * (rand(2) - 1)), 0.0011, 0.12 * TBG);
-      md_setn(1, 1, 5600 * tb_bs * (1 + 0.05 * (rand(2) - 1)), 0.0045 + 0.004 * tb_rt, 0.8 * TBG);
-      md_setn(2, 1, 8100 * tb_bs * (1 + 0.05 * (rand(2) - 1)), 0.0045 + 0.004 * tb_rt, 1.0 * TBG);
-      md_setn(3, 1, 11300 * tb_bs * (1 + 0.05 * (rand(2) - 1)), 0.003, (0.15 + 0.05 * tb_br) * TBG);
-    );
+  // TAMBOURINE (PhISEM): collisions at random while the shake's energy lasts, thinning out as it dies away;
+  // each collision's strength follows the energy on a gentle curve, so the jingles fade out rather than stop
+  tb_E > 0.00005 ? (
+    rand(1) < tb_nob * tb_pc * (0.3 + 0.7 * min(tb_E, 1)) ? tb_L = max(tb_L, (0.55 + rand(0.45)) * tb_E ^ 0.7 * tb_gn);
     tb_E *= tb_kE;
   );
   x = (rand(2) - 1) * tb_L; tb_L *= tb_ks;
