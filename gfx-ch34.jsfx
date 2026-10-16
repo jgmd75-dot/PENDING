@@ -569,21 +569,19 @@ function kr_module(m, s) local(x, w, y, inn, a, c, base, cx, cy, f, r) (
   ) : (
     kr_key(x + 14, y + 44, 70, 24, "AUTO", slider19 >= 0.5) ? kr_tog(19);
     kr_key(x + 90, y + 44, 96, 24, "SOFT KNEE", slider20 >= 0.5) ? kr_tog(20);
-    kr_scale(x + 82, y + 160, 36, 5, 19, "-40|-30|-20|-10|0", 2);
-    a = kr_knob(x + 82, y + 160, 36, 15, -40, 0, -20); sprintf(#krv, "%.1f dBFS", slider15); kr_name(x + 82, y + 222, a, "THRESHOLD", #krv);
+    kr_scale(x + 110, y + 160, 36, 5, 19, "-40|-30|-20|-10|0", 2);
+    a = kr_knob(x + 110, y + 160, 36, 15, -40, 0, -20); sprintf(#krv, "%.1f dBFS", slider15); kr_name(x + 110, y + 222, a, "THRESHOLD", #krv);
+    // RATIO / ATTACK / RELEASE stacked on the EQ's rows
     slider16 >= 20.95 ? strcpy(#krr, "INF : 1") : sprintf(#krr, "%.1f : 1", slider16);
-    kr_small(x + 186, y + 150, 17, 16, 1, 21, 3, 11, "RATIO", #krr);
+    kr_small(x + 290, y + 104, 19, 16, 1, 21, 3, 11, "RATIO", #krr);
     krv_lg = 1;
-    sprintf(#kra, "%.1f ms", slider17); kr_small(x + 250, y + 150, 17, 17, 0.1, 100, 10, 11, "ATTACK", #kra);
-    sprintf(#krl, "%d ms", floor(slider18 + 0.5)); kr_small(x + 312, y + 150, 17, 18, 20, 2000, 200, 11, "RELEASE", #krl);
+    sprintf(#kra, "%.1f ms", slider17); kr_small(x + 290, y + 194, 19, 17, 0.1, 100, 10, 11, "ATTACK", #kra);
+    sprintf(#krl, "%d ms", floor(slider18 + 0.5)); kr_small(x + 290, y + 284, 19, 18, 20, 2000, 200, 11, "RELEASE", #krl);
     krv_lg = 0;
-    slider19 >= 0.5 ? ( ui_cola(KRF, 0.65); kr_r(x + 222, y + 118, 120, 70); gfx_setfont(13); ui_col(KRA); kr_ctxt(x + 281, y + 196, "AUTO"); );
-    slider24 < 20 ? strcpy(#krs, "OFF") : sprintf(#krs, "%d Hz", floor(slider24 + 0.5));
-    kr_small(x + 82, y + 284, 17, 24, 0, 300, 0, 11, "SC HPF", #krs);
-    slider24 >= 20 ? ( sprintf(#krs2, "> %d Hz", floor(csa_scf + 0.5)); gfx_setfont(13); ui_col(KRI2); kr_ctxt(x + 82, y + 326, #krs2); );
-    kr_small(x + 186, y + 284, 17, 21, -20, 20, 0, 11, "MAKEUP", kr_db(slider21));
-    kr_small(x + 250, y + 284, 17, 22, -20, 0, -1, 11, "PEAK", kr_db(slider22));
-    kr_key(x + 284, y + 272, 54, 24, "LIMIT", slider23 >= 0.5) ? kr_tog(23);
+    slider19 >= 0.5 ? ( ui_cola(KRF, 0.65); kr_r(x + 250, y + 162, 84, 160); gfx_setfont(13); ui_col(KRA); kr_ctxt(x + 290, y + 244, "AUTO"); );
+    kr_small(x + 50, y + 284, 17, 21, -20, 20, 0, 11, "MAKEUP", kr_db(slider21));
+    kr_small(x + 122, y + 284, 17, 22, -20, 0, -1, 11, "PEAK", kr_db(slider22));
+    kr_key(x + 160, y + 272, 60, 24, "LIMIT", slider23 >= 0.5) ? kr_tog(23);
   );
 );
 
@@ -620,7 +618,9 @@ kr_key(114, 80, 50, 24, "IN", slider3 >= 0.5) ? kr_tog(3);
 kr_scale(97, 210, 40, 5, 21, "-24|-12|0|+12|+24", 2);
 krv_a = kr_knob(97, 210, 40, 1, -24, 24, 0); kr_name(97, 280, krv_a, "DRIVE", kr_db(slider1));
 gfx_setfont(13); ui_col(KRI2); kr_ctxt(97, 132, slider3 >= 0.5 ? "TRIM + DRIVE" : "TRIM ONLY");
-sprintf(#krv, "%d%%", floor(slider26 + 0.5)); kr_small(97, 350, 17, 26, 0, 100, 50, 11, "DRIFT", #krv);
+slider24 < 20 ? strcpy(#krs, "OFF") : sprintf(#krs, "%d Hz", floor(slider24 + 0.5));
+kr_small(97, 350, 17, 24, 0, 300, 0, 11, "SC HPF", #krs);
+slider24 >= 20 ? ( sprintf(#krs2, "> %d Hz", floor(csa_scf + 0.5)); gfx_setfont(13); ui_col(KRI2); kr_ctxt(97, 398, #krs2); );
 
 krv_o = slider2 >= 0.5;
 kr_module(krv_o ? 2 : 1, 0); kr_module(krv_o ? 1 : 2, 1);
@@ -628,6 +628,7 @@ kr_module(krv_o ? 2 : 1, 0); kr_module(krv_o ? 1 : 2, 1);
 kr_sect(880, 72, 96, 338, "OUTPUT");
 kr_scale(928, 210, 26, 3, 15, "-12|0|+12", 4);
 krv_a = kr_knob(928, 210, 26, 25, -12, 12, 0); kr_name(928, 262, krv_a, "LEVEL", kr_db(slider25));
+sprintf(#krv, "%d%%", floor(slider26 + 0.5)); kr_small(928, 350, 17, 26, 0, 100, 50, 11, "DRIFT", #krv);
 
 kr_sect(982, 72, 76, 338, "METERS");
 kr_window(988, 96, 64, 274);
