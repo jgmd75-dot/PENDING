@@ -21,14 +21,17 @@ folder, as usual.
   BOB34           gfx-bob34.jsfx           Modulation      modular rack: ladder LP, ring mod, phaser, filter array, saturator + CV
   COM34           gfx-com34.jsfx           Mastering       stepped diode-bridge compressor: auto ratio, soft, bass, link
   BUS34           gfx-bus34.jsfx           Mastering       stereo colour unit: drive, shelves, HF comp, image, transformer
+  KBH77           gfx-kbh77.jsfx           Dynamics        broadcast strip: 18 dB/oct filters, presence EQ, comp / exp + hold + gate, log-clip limiter
+  PRE3            gfx-pre3.jsfx            Amps & drive    preamp: WEST / JH / AERO models, one face each, neutral at DRIVE 0
 
 Ready to release together:
   Utilities     TRDI + ALIGN + CHECK  -> 6 + 3 = 9
   Dynamics      CH34 + SUP34 + GLU34  -> 15 + 3 = 18
   Mastering     MSAT + BUS34 + COM34 -> 12 + 3 = 15
   Drums         SHK34 + BEL34 + CLV34 -> 6 + 3 = 9
+  Amps & drive  FYRE + BED34 + PRE3   -> 18 + 3 = 21
 Waiting:
-  Amps & drive  FYRE + BED34 + one more drive -> 18 + 3 = 21
+  Dynamics      KBH77 + two more dynamics units -> (after the group above) 18 + 3 = 21
   Modulation    BOB34 + two more modulation units -> 21 + 3 = 24
 
 Manuals/   manual pages, one-page sections and images (TRDI, FYRE, MSAT so far)
