@@ -268,7 +268,7 @@ ost_setup(0, 0.3, 120, 6000, -0.3, 1);                // the house output stage:
 drift_macro(slider20);
 // STEREO / M/S: a change starts the crossfade into the other set (warmed up first); one more change waits for it
 bs_mt = slider18 >= 0.5;
-bs_xf == 0 && bs_mt != bs_mCur ? (
+bs_xf <= 0 && bs_mt != bs_mCur ? (
   bs_snap ? bs_mCur = bs_mt : (
     bs_mNew = bs_mt; bs_xf = 0.000001; bs_wu = floor(0.04 * srate);
     bs_cur ? ( sA.set_reset(); bs_prime = 1; ) : ( sB.set_reset(); bs_prime = 2; );

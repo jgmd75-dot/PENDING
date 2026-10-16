@@ -278,7 +278,7 @@ ost_setup(0, 0.3, 120, 6000, -0.3, 0);                // the house output stage:
 drift_macro(slider26);
 // the order: a change starts the crossfade into the other set (warmed up first); one more change waits for it
 cs_ot = slider2 >= 0.5;
-cs_xf == 0 && cs_ot != cs_oCur ? (
+cs_xf <= 0 && cs_ot != cs_oCur ? (
   cs_snap ? cs_oCur = cs_ot : (
     cs_oNew = cs_ot; cs_xf = 0.000001; cs_wu = floor(0.04 * srate);
     cs_cur ? ( sA.set_reset(); cs_prime = 1; ) : ( sB.set_reset(); cs_prime = 2; );

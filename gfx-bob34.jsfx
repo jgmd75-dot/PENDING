@@ -344,7 +344,7 @@ ost_setup(0, 0.3, 120, 6000, -0.3, 1);                // the house output stage:
 drift_macro(slider4);
 // the chain: a change starts the crossfade into the other set (warmed up first); one more change waits for it
 bb_ot = floor(min(max(slider1, 0), 119) + 0.5);
-bb_xf == 0 && bb_ot != bb_oCur ? (
+bb_xf <= 0 && bb_ot != bb_oCur ? (
   bb_snap ? bb_oCur = bb_ot : (
     bb_oNew = bb_ot; bb_xf = 0.000001; bb_wu = floor(0.04 * srate);
     bb_cur ? sA.set_reset() : sB.set_reset();

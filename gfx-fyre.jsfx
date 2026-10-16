@@ -304,7 +304,7 @@ drift_macro(slider18);
 fy_n2 = 2 * samplesblock;
 // the order: a change starts the crossfade into the other set (from rest); one more change waits for the fade
 fy_ot = floor(min(max(slider3, 0), 5) + 0.5);
-fy_xf == 0 && fy_ot != fy_oCur ? (
+fy_xf <= 0 && fy_ot != fy_oCur ? (
   fy_snap ? ( fy_oCur = fy_ot; ) : (
     fy_oNew = fy_ot; fy_xf = 0.000001; fy_wu = floor(0.04 * srate);
     fy_cur ? ( chL.sA.set_reset(); chR.sA.set_reset(); fy_prime = 1; ) : ( chL.sB.set_reset(); chR.sB.set_reset(); fy_prime = 2; );

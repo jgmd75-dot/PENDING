@@ -151,7 +151,7 @@ al_sh = min(max(slider1, -20), 20) * 0.001 * srate; al_sh = al_sh >= 0 ? floor(a
 al_D = max(al_sh, 0); al_L = max(-al_sh, 0);
 pdc_bot_ch = 0; pdc_top_ch = 2; pdc_delay = al_L;
 // a change starts a crossfade from the old taps to the new ones
-al_xf == 0 && (al_D != al_dB || al_L != al_lB) ? ( al_dA = al_dB; al_lA = al_lB; al_dB = al_D; al_lB = al_L; al_xf = al_first ? 1 : 0.000001; );
+al_xf <= 0 && (al_D != al_dB || al_L != al_lB) ? ( al_dA = al_dB; al_lA = al_lB; al_dB = al_D; al_lB = al_L; al_xf = al_first ? 1 : 0.000001; );
 al_first = 0;
 // ROTATE: the corner of the first-order all-pass that turns the phase by the angle at the frequency
 al_ang = min(max(slider3, 0), 170);

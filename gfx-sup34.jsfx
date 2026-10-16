@@ -338,7 +338,7 @@ ost_setup(0, 0.3, 120, 6000, -0.3, 0);                // the house output stage:
 drift_macro(slider40);
 // the routing: a change starts the crossfade into the other set (warmed up first); one more change waits for it
 sp_rt = (slider34 >= 0.5) + 2 * (slider35 >= 0.5) + 4 * (slider36 >= 0.5) + 8 * (slider37 >= 0.5);
-sp_xf == 0 && sp_rt != sp_rCur ? (
+sp_xf <= 0 && sp_rt != sp_rCur ? (
   sp_snap ? sp_rCur = sp_rt : (
     sp_rNew = sp_rt; sp_xf = 0.000001; sp_wu = floor(0.04 * srate);
     sp_cur ? sA.set_reset() : sB.set_reset();
