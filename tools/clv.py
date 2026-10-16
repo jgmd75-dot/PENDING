@@ -17,7 +17,7 @@ HDR = """desc:GFX CLV34 [clave, woodblocks + agogo]
 //   AGOGO      two iron cone bells, high and low (a fourth apart): widely spread inharmonic modes (x 4.08, 6.67 and
 //              a fixed 3.7 kHz shell ring), a slow beat between the near-doubled fundamental, a long ring.
 //              TUNE 600 .. 1600 Hz (the high bell), DECAY.
-//   HARDNESS   the stick's contact: a soft stick stays on the wood longer (a wider, rounder strike), a hard one
+//   HARDNESS   (the clave's) the stick's contact: a soft stick stays on the wood longer (a wider, rounder strike), a hard one
 //              bounces off at once (bright). Accents a little harder still.
 //   SEQUENCER  a lane per voice (CLAVE, WOOD HI, WOOD LO, AGOGO HI, AGOGO LO), each with its own LENGTH (1 - 32 steps:
 //              polymeters), RATE 1/4 .. 1/32 with triplets, SWING 0 - 75 %, HUMANIZE (timing late by up to 20 ms and
@@ -40,7 +40,7 @@ slider26:950<500,1500,1>-Woodblock tune (Hz)
 slider27:0.45<0.15,0.85,0.01>-Woodblock decay
 slider28:950<600,1600,1>-Agogo tune (Hz)
 slider29:0.16<0.08,0.24,0.01>-Agogo decay
-slider30:6<0,10,0.1>-Hardness
+slider30:6<0,10,0.1>-Clave hardness
 slider31:0<0,1,1{Off,On}>-Clave last hit a 16th late
 """
 INS = r"""
@@ -68,7 +68,7 @@ function ins_trig(k, v, a) local(f, d, m, h) (
     md_set(m + 3, k, f * 6.669, 0.09 * d, 0.3);
   );
   // the stick: a raised-cosine contact, narrower for harder sticks (and accents)
-  h = (0.75 - 0.06 * cv_hd) * (a ? 1 - 0.04 * pc_acc : 1) / f;                    // (s: a fraction of the voice's period)
+  h = (0.75 - 0.06 * (k == 0 ? cv_hd : 6)) * (a ? 1 - 0.04 * pc_acc : 1) / f;                    // (s: a fraction of the voice's period)
   XW[k] = max(floor(h * srate), 2); XP[k] = 0; XA[k] = v * 2 / XW[k];
   XN[k] = v * (k == 1 || k == 2 ? 0.5 : k == 0 ? 0.25 : 0.12);                     // and its knock
 );
